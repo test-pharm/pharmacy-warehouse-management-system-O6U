@@ -19,6 +19,8 @@ class InventoryPage extends StatefulWidget {
 class _InventoryPageState extends State<InventoryPage> {
   final TextEditingController _searchCtrl = TextEditingController();
   String _availabilityFilter = 'All';
+  int? _sortColumnIndex;
+  bool _sortAscending = true;
 
   @override
   void dispose() {
@@ -29,7 +31,16 @@ class _InventoryPageState extends State<InventoryPage> {
   @override
   Widget build(BuildContext context) {
     final provider = ProductProvider.of(context);
-    final products = provider.products.where(_matchesFilters).toList();
+    final filtered = provider.products.where(_matchesFilters).toList();
+    if (_sortColumnIndex != null) {
+      filtered.sort((a, b) {
+        final aVal = _sortValue(a);
+        final bVal = _sortValue(b);
+        final result = Comparable.compare(aVal, bVal);
+        return _sortAscending ? result : -result;
+      });
+    }
+    final products = filtered;
 
     return Padding(
       padding: const EdgeInsets.all(18),
@@ -170,13 +181,46 @@ class _InventoryPageState extends State<InventoryPage> {
             headingRowHeight: 54,
             dataRowMinHeight: 62,
             dataRowMaxHeight: 62,
-            columns: const [
-              DataColumn(label: Text('Name')),
-              DataColumn(label: Text('Quantity')),
-              DataColumn(label: Text('Unit')),
-              DataColumn(label: Text('Availability')),
-              DataColumn(label: Text('Expiry Date')),
-              DataColumn(label: Text('Actions')),
+            sortColumnIndex: _sortColumnIndex,
+            sortAscending: _sortAscending,
+            columns: [
+              DataColumn(
+                label: const Text('Name'),
+                onSort: (colIndex, asc) => setState(() {
+                  _sortColumnIndex = colIndex;
+                  _sortAscending = asc;
+                }),
+              ),
+              DataColumn(
+                label: const Text('Quantity'),
+                numeric: true,
+                onSort: (colIndex, asc) => setState(() {
+                  _sortColumnIndex = colIndex;
+                  _sortAscending = asc;
+                }),
+              ),
+              DataColumn(
+                label: const Text('Unit'),
+                onSort: (colIndex, asc) => setState(() {
+                  _sortColumnIndex = colIndex;
+                  _sortAscending = asc;
+                }),
+              ),
+              DataColumn(
+                label: const Text('Availability'),
+                onSort: (colIndex, asc) => setState(() {
+                  _sortColumnIndex = colIndex;
+                  _sortAscending = asc;
+                }),
+              ),
+              DataColumn(
+                label: const Text('Expiry Date'),
+                onSort: (colIndex, asc) => setState(() {
+                  _sortColumnIndex = colIndex;
+                  _sortAscending = asc;
+                }),
+              ),
+              const DataColumn(label: Text('Actions')),
             ],
             rows: products.map((product) {
               return DataRow(
@@ -555,6 +599,19 @@ class _InventoryPageState extends State<InventoryPage> {
       return '${date.year}-$month-$day';
     } catch (_) {
       return raw.isEmpty ? '-' : raw;
+    }
+  }
+
+  Comparable _sortValue(MaterialModel p) {
+    switch (_sortColumnIndex) {
+      case 0: return p.name.toLowerCase();
+      case 1: return p.quantity;
+      case 2: return p.unit.toLowerCase();
+      case 3: return p.isAvailable ? 1 : 0;
+      case 4:
+        final dt = DateTime.tryParse(p.expiryDate);
+        return dt ?? DateTime(9999);
+      default: return 0;
     }
   }
 }

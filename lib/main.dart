@@ -4,6 +4,7 @@ import 'package:graduation_project/Models/ProductProvider.dart';
 import 'package:graduation_project/Models/UserRoleModel.dart';
 import 'package:graduation_project/Models/app_localizations.dart';
 import 'package:graduation_project/views/LoginView.dart';
+import 'package:graduation_project/widgets/UpdateDialog.dart';
 
 const String backgroundImagePath =
     'assets/Gemini_Generated_Image_4jaq2t4jaq2t4jaq.png';
@@ -46,7 +47,7 @@ class PharmacyLoginApp extends StatelessWidget {
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
               ],
-              home: ProductProviderScope(child: const Loginview()),
+              home: UpdateCheckScope(child: ProductProviderScope(child: const Loginview())),
             );
           },
         );

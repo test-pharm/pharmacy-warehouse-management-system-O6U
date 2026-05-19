@@ -32,6 +32,47 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
   String _existingQuery = '';
   MaterialModel? _selectedExistingProduct;
   String? _existingError;
+  bool _popIntercepted = false;
+
+  bool get _hasUnsavedChanges {
+    final product = widget.initialProduct;
+    if (product != null) {
+      return _nameController.text != product.name ||
+          _quantityController.text != product.quantity.toString() ||
+          _expiryDate != product.expiryDateValue ||
+          _isAvailable != product.isAvailable;
+    }
+    if (_mode == 1) return _selectedExistingProduct != null && int.tryParse(_quantityController.text.trim()) != null;
+    return _nameController.text.trim().isNotEmpty ||
+        _skuController.text.trim().isNotEmpty ||
+        _quantityController.text.trim().isNotEmpty ||
+        _unitController.text.trim().isNotEmpty ||
+        _logNumberController.text.trim().isNotEmpty ||
+        _storageLocationController.text.trim().isNotEmpty ||
+        _categoryIdController.text.trim().isNotEmpty ||
+        _expiryDate != null;
+  }
+
+  Future<bool> _maybeDiscard() async {
+    if (!_hasUnsavedChanges || _popIntercepted) return true;
+    _popIntercepted = true;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Discard changes?'),
+        content: const Text('You have unsaved changes. Are you sure you want to discard them?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Discard', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
 
   @override
   void initState() {
@@ -144,7 +185,14 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
       insetPadding: const EdgeInsets.all(24),
       backgroundColor: isDark ? const Color(0xFF1B2430) : Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: Container(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+          final shouldPop = await _maybeDiscard();
+          if (shouldPop && context.mounted) Navigator.of(context).pop();
+        },
+        child: Container(
         width: 680,
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -180,7 +228,10 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () async {
+                        final shouldPop = await _maybeDiscard();
+                        if (shouldPop && context.mounted) Navigator.pop(context);
+                      },
                       icon: Icon(
                         Icons.close,
                         color: isDark ? Colors.white70 : Colors.black54,
@@ -221,7 +272,10 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () async {
+                        final shouldPop = await _maybeDiscard();
+                        if (shouldPop && context.mounted) Navigator.pop(context);
+                      },
                       child: const Text('Cancel'),
                     ),
                     const SizedBox(width: 12),
@@ -244,6 +298,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

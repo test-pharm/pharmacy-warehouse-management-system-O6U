@@ -241,6 +241,7 @@ class _InventoryPageState extends State<InventoryPage> {
   }
 
   Widget _productSummary(MaterialModel product) {
+    final textColor = Theme.of(context).textTheme.bodySmall?.color ?? Colors.black54;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,7 +250,7 @@ class _InventoryPageState extends State<InventoryPage> {
         const SizedBox(height: 4),
         Text(
           'SKU: ${product.sku}',
-          style: const TextStyle(fontSize: 12, color: Colors.black54),
+          style: TextStyle(fontSize: 12, color: textColor),
         ),
       ],
     );
@@ -502,27 +503,44 @@ class _InventoryPageState extends State<InventoryPage> {
       ),
     );
 
-    if (confirmed != true) {
-      return;
-    }
+    if (confirmed != true) return;
+    if (!context.mounted) return;
 
-    final error = await provider.deleteProduct(product.id);
-    if (!context.mounted) {
-      return;
-    }
+    final productName = product.name;
+    final productId = product.id;
+    bool _cancelled = false;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(error ?? '${product.name} deleted successfully.'),
-        backgroundColor: error == null ? null : Colors.red,
+        content: Text('$productName will be deleted...'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () => _cancelled = true,
+        ),
+        duration: const Duration(seconds: 4),
+      ),
+    );
+
+    await Future.delayed(const Duration(seconds: 4));
+    if (_cancelled || !context.mounted) return;
+
+    final error = await provider.deleteProduct(productId);
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error ?? '$productName deleted successfully.'),
+        backgroundColor: error == null ? Colors.green : Colors.red,
       ),
     );
   }
 
   void _showDetails(BuildContext context, MaterialModel product) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E1E2E) : null,
         title: Text(product.name),
         content: Column(
           mainAxisSize: MainAxisSize.min,

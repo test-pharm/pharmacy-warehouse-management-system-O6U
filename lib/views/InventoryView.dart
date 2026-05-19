@@ -537,54 +537,117 @@ class _InventoryPageState extends State<InventoryPage> {
 
   void _showDetails(BuildContext context, MaterialModel product) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final mutedColor = isDark ? Colors.white60 : Colors.black54;
+
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: isDark ? const Color(0xFF1E1E2E) : null,
-        title: Text(product.name),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _detailRow('SKU', product.sku),
-            _detailRow('Quantity', _databaseQuantityText(product)),
-            _detailRow('Unit', product.unit),
-            _detailRow('Log Number', product.lot),
-            _detailRow('Storage', product.location),
-            _detailRow(
-              'Availability',
-              product.isAvailable ? 'Available' : 'Unavailable',
-            ),
-            _detailRow('Expiry', _formatDate(product.expiryDate)),
-            _detailRow('Category ID', product.categoryId.toString()),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Close'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        titlePadding: EdgeInsets.zero,
+        contentPadding: EdgeInsets.zero,
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF2A2A3E) : const Color(0xFFF5F7FA),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: (product.isAvailable ? Colors.green : Colors.orange).withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.inventory_2_outlined,
+                        color: product.isAvailable ? Colors.green : Colors.orange,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(product.name,
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textColor)),
+                          const SizedBox(height: 2),
+                          Text('SKU: ${product.sku}',
+                            style: TextStyle(fontSize: 13, color: mutedColor)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    _detailRow(Icons.category_outlined, 'Category', product.category.isNotEmpty ? product.category : product.categoryId.toString()),
+                    const Divider(height: 20),
+                    _detailRow(Icons.inventory_outlined, 'Quantity', '${product.quantity} ${product.unit}'),
+                    const Divider(height: 20),
+                    _detailRow(Icons.qr_code_outlined, 'Lot / Batch', product.lot.isEmpty ? '-' : product.lot),
+                    const Divider(height: 20),
+                    _detailRow(Icons.location_on_outlined, 'Storage', product.location.isEmpty ? '-' : product.location),
+                    const Divider(height: 20),
+                    _detailRow(Icons.calendar_today_outlined, 'Expiry Date', _formatDate(product.expiryDate)),
+                    const Divider(height: 20),
+                    _detailRow(
+                      Icons.check_circle_outlined,
+                      'Status',
+                      product.isAvailable ? 'Available' : 'Unavailable',
+                      valueColor: product.isAvailable ? Colors.green : Colors.orange,
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: Text('Close', style: TextStyle(color: mutedColor)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _detailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              '$label:',
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
+  Widget _detailRow(IconData icon, String label, String value, {Color? valueColor}) {
+    final muted = Theme.of(context).brightness == Brightness.dark ? Colors.white60 : Colors.black54;
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: muted),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 90,
+          child: Text('$label:', style: TextStyle(fontSize: 13, color: muted)),
+        ),
+        Expanded(
+          child: Text(
+            value.isEmpty ? '-' : value,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: valueColor),
           ),
-          Expanded(child: Text(value.isEmpty ? '-' : value)),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

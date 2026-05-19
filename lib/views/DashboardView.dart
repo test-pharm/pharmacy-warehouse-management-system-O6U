@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:graduation_project/Models/ProductProvider.dart';
 import 'package:graduation_project/Models/UserRoleModel.dart';
@@ -16,15 +17,22 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  Timer? _refreshTimer;
+
   @override
   void initState() {
     super.initState();
     NotificationService.changes.addListener(_handleNotificationChange);
+    _refreshTimer = Timer.periodic(const Duration(seconds: 60), (_) {
+      final provider = ProductProvider.of(context, listen: false);
+      provider.loadProducts();
+    });
   }
 
   @override
   void dispose() {
     NotificationService.changes.removeListener(_handleNotificationChange);
+    _refreshTimer?.cancel();
     super.dispose();
   }
 

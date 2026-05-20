@@ -7,6 +7,7 @@ import 'package:graduation_project/Services/notificationService.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:graduation_project/Models/app_localizations.dart';
 
 class ReportsPage extends StatefulWidget {
   final VoidCallback? onGoToOrders;
@@ -41,8 +42,19 @@ class _ReportsPageState extends State<ReportsPage> {
     if (mounted) setState(() {});
   }
 
+  String _trStatus(String status) {
+    switch (status) {
+      case 'Good': return context.tr.statusGood;
+      case 'Expiring Soon': return context.tr.statusExpiringSoon;
+      case 'Expired': return context.tr.statusExpired;
+      case 'Low Stock': return context.tr.statusLowStock;
+      default: return status;
+    }
+  }
+
   Future<void> _printReport(ProductProvider provider) async {
     try {
+      final t = this.context.tr;
       final pdf = pw.Document();
       final materials = provider.products;
 
@@ -51,17 +63,23 @@ class _ReportsPageState extends State<ReportsPage> {
           pageFormat: PdfPageFormat.a4,
           build: (pw.Context context) {
             final headers = [
-              'Name',
-              'Category',
-              'Quantity',
-              'Expiry',
-              'Status',
+              t.materialName,
+              t.category,
+              t.quantity,
+              t.expiryDate,
+              t.status,
             ];
+            final statusMap = <String, String>{
+              'Good': t.statusGood,
+              'Expiring Soon': t.statusExpiringSoon,
+              'Expired': t.statusExpired,
+              'Low Stock': t.statusLowStock,
+            };
             return pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text(
-                  'Materials Inventory Report',
+                  t.reportsTitle,
                   style: pw.TextStyle(
                     fontSize: 24,
                     fontWeight: pw.FontWeight.bold,
@@ -69,7 +87,7 @@ class _ReportsPageState extends State<ReportsPage> {
                 ),
                 pw.SizedBox(height: 10),
                 pw.Text(
-                  'Generated: ${DateTime.now().toString().substring(0, 16)}',
+                  '${t.generatedPrefix}${DateTime.now().toString().substring(0, 16)}',
                   style: const pw.TextStyle(fontSize: 12),
                 ),
                 pw.SizedBox(height: 20),
@@ -77,26 +95,26 @@ class _ReportsPageState extends State<ReportsPage> {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     _buildPdfKpi(
-                      'Total Materials',
+                      t.totalMaterials,
                       materials.length.toString(),
                     ),
                     _buildPdfKpi(
-                      'Expiring Soon',
+                      t.statusExpiringSoon,
                       provider.expiringSoonCount.toString(),
                     ),
                     _buildPdfKpi(
-                      'Low Stock',
+                      t.statusLowStock,
                       provider.lowStockCount.toString(),
                     ),
                     _buildPdfKpi(
-                      'Critical Alerts',
+                      t.criticalAlertsTitle,
                       provider.getCriticalAlertsCount().toString(),
                     ),
                   ],
                 ),
                 pw.SizedBox(height: 30),
                 pw.Text(
-                  'Materials List',
+                  t.inventoryTitle,
                   style: pw.TextStyle(
                     fontSize: 18,
                     fontWeight: pw.FontWeight.bold,
@@ -106,12 +124,14 @@ class _ReportsPageState extends State<ReportsPage> {
                 pw.Table.fromTextArray(
                   headers: headers,
                   data: materials.map((m) {
+                    final rawStatus = MaterialService.getMaterialStatus(m);
+                    final pdfStatus = statusMap[rawStatus] ?? rawStatus;
                     return [
                       m.name,
                       m.category,
                       m.quantity.toString(),
                       m.expiryDate,
-                      MaterialService.getMaterialStatus(m),
+                      pdfStatus,
                     ];
                   }).toList(),
                   headerStyle: pw.TextStyle(
@@ -131,16 +151,17 @@ class _ReportsPageState extends State<ReportsPage> {
 
       if (mounted) _showPrintOptionsDialog(pdf);
     } catch (e) {
-      if (mounted) _showErrorDialog('Error generating report: $e');
+      if (mounted) _showErrorDialog('${context.tr.errorGeneratingPdf}: $e');
     }
   }
 
   void _showPrintOptionsDialog(pw.Document pdf) {
+    final t = this.context.tr;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Export Report'),
-        content: const Text('Choose how you would like to export the report:'),
+        title: Text(t.exportReport),
+        content: Text(t.chooseExportMethod),
         actions: [
           TextButton.icon(
             onPressed: () async {
@@ -148,7 +169,7 @@ class _ReportsPageState extends State<ReportsPage> {
               await _printPdf(pdf);
             },
             icon: const Icon(Icons.print),
-            label: const Text('Print'),
+            label: Text(t.print),
           ),
           TextButton.icon(
             onPressed: () async {
@@ -156,11 +177,11 @@ class _ReportsPageState extends State<ReportsPage> {
               await _sharePdf(pdf);
             },
             icon: const Icon(Icons.share),
-            label: const Text('Share'),
+            label: Text(t.saveOrShare),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(t.cancel),
           ),
         ],
       ),
@@ -173,7 +194,7 @@ class _ReportsPageState extends State<ReportsPage> {
         onLayout: (PdfPageFormat fmt) async => pdf.save(),
       );
     } catch (e) {
-      if (mounted) _showErrorDialog('Error printing: $e');
+      if (mounted) _showErrorDialog('${context.tr.error}: $e');
     }
   }
 
@@ -185,20 +206,21 @@ class _ReportsPageState extends State<ReportsPage> {
             'inventory_report_${DateTime.now().millisecondsSinceEpoch}.pdf',
       );
     } catch (e) {
-      if (mounted) _showErrorDialog('Error sharing PDF: $e');
+      if (mounted) _showErrorDialog('${context.tr.error}: $e');
     }
   }
 
   void _showErrorDialog(String message) {
+    final t = this.context.tr;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Error'),
+        title: Text(t.error),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text(t.close),
           ),
         ],
       ),
@@ -236,17 +258,17 @@ class _ReportsPageState extends State<ReportsPage> {
     // Build unique category list
     final categories = allMaterials.map((m) => m.category).toSet().toList()
       ..sort();
-    final categoryItems = ['All Categories', ...categories];
+    final categoryItems = [context.tr.allCategories, ...categories];
     final effectiveCategory = categoryItems.contains(_selectedCategory)
         ? _selectedCategory
-        : 'All Categories';
+        : context.tr.allCategories;
     final effectiveStatus =
-        const [
+        [
           'All Statuses',
-          'Good',
-          'Expiring Soon',
-          'Expired',
-          'Low Stock',
+          context.tr.statusGood,
+          context.tr.statusExpiringSoon,
+          context.tr.statusExpired,
+          context.tr.statusLowStock,
         ].contains(_selectedStatus)
         ? _selectedStatus
         : 'All Statuses';
@@ -257,11 +279,13 @@ class _ReportsPageState extends State<ReportsPage> {
         _searchCtrl.text.toLowerCase(),
       );
       final matchCat =
-          effectiveCategory == 'All Categories' ||
+          effectiveCategory == context.tr.allCategories ||
           m.category == effectiveCategory;
       final status = MaterialService.getMaterialStatus(m);
       final matchStatus =
-          effectiveStatus == 'All Statuses' || status == effectiveStatus;
+          effectiveStatus == 'All Statuses' ||
+          status == effectiveStatus ||
+          _trStatus(status) == effectiveStatus;
       return matchSearch && matchCat && matchStatus;
     }).toList();
 
@@ -276,7 +300,7 @@ class _ReportsPageState extends State<ReportsPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Reports & Analytics',
+                context.tr.reportsAndAnalytics,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -291,7 +315,7 @@ class _ReportsPageState extends State<ReportsPage> {
                     ElevatedButton.icon(
                       onPressed: () => _printReport(provider),
                       icon: const Icon(Icons.print, size: 18),
-                      label: const Text('Export Report'),
+                      label: Text(context.tr.exportReport),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0D6EFD),
                         foregroundColor: Colors.white,
@@ -310,7 +334,7 @@ class _ReportsPageState extends State<ReportsPage> {
                 ElevatedButton.icon(
                   onPressed: () => _printReport(provider),
                   icon: const Icon(Icons.print, size: 18),
-                  label: const Text('Export Report'),
+                  label: Text(context.tr.exportReport),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0D6EFD),
                     foregroundColor: Colors.white,
@@ -328,7 +352,7 @@ class _ReportsPageState extends State<ReportsPage> {
               children: [
                 Expanded(
                   child: _buildKpiCard(
-                    'Total Materials',
+                    context.tr.totalMaterials,
                     provider.totalProducts.toString(),
                     isDark,
                     null,
@@ -337,7 +361,7 @@ class _ReportsPageState extends State<ReportsPage> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildKpiCard(
-                    'Expiring Soon',
+                    context.tr.statusExpiringSoon,
                     provider.expiringSoonCount.toString(),
                     isDark,
                     const Color(0xFFFFA500),
@@ -346,7 +370,7 @@ class _ReportsPageState extends State<ReportsPage> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildKpiCard(
-                    'Low Stock',
+                    context.tr.statusLowStock,
                     provider.lowStockCount.toString(),
                     isDark,
                     const Color(0xFFDC3545),
@@ -355,7 +379,7 @@ class _ReportsPageState extends State<ReportsPage> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildKpiCard(
-                    'Critical Alerts',
+                    context.tr.criticalAlertsTitle,
                     criticalAlertsCount.toString(),
                     isDark,
                     criticalAlertsCount > 0 ? const Color(0xFFDC3545) : null,
@@ -383,7 +407,7 @@ class _ReportsPageState extends State<ReportsPage> {
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Search materials...',
+                      hintText: context.tr.searchByNameOrSku,
                       hintStyle: TextStyle(
                         color: isDark ? Colors.white38 : Colors.black38,
                         fontSize: 14,
@@ -412,10 +436,10 @@ class _ReportsPageState extends State<ReportsPage> {
               const SizedBox(width: 12),
               _buildDropdownButton(isDark, effectiveStatus, [
                 'All Statuses',
-                'Good',
-                'Expiring Soon',
-                'Expired',
-                'Low Stock',
+                context.tr.statusGood,
+                context.tr.statusExpiringSoon,
+                context.tr.statusExpired,
+                context.tr.statusLowStock,
               ], (v) => setState(() => _selectedStatus = v!)),
             ],
           ),
@@ -439,7 +463,7 @@ class _ReportsPageState extends State<ReportsPage> {
                   Padding(
                     padding: const EdgeInsets.all(20),
                     child: Text(
-                      'Materials',
+                      context.tr.inventoryTitle,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -472,11 +496,11 @@ class _ReportsPageState extends State<ReportsPage> {
                     ),
                     child: Row(
                       children: [
-                        _headerCell('Name', flex: 3, isDark: isDark),
-                        _headerCell('Category', flex: 2, isDark: isDark),
-                        _headerCell('Quantity', flex: 1, isDark: isDark),
-                        _headerCell('Expiry Date', flex: 2, isDark: isDark),
-                        _headerCell('Status', flex: 1, isDark: isDark),
+                        _headerCell(context.tr.materialName, flex: 3, isDark: isDark),
+                        _headerCell(context.tr.category, flex: 2, isDark: isDark),
+                        _headerCell(context.tr.quantity, flex: 1, isDark: isDark),
+                        _headerCell(context.tr.expiryDate, flex: 2, isDark: isDark),
+                        _headerCell(context.tr.status, flex: 1, isDark: isDark),
                       ],
                     ),
                   ),
@@ -577,7 +601,7 @@ class _ReportsPageState extends State<ReportsPage> {
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Text(
-                    'Alerts',
+                    context.tr.alertsLabel,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -608,9 +632,9 @@ class _ReportsPageState extends State<ReportsPage> {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: _buildAlertItem(
                           isDark,
-                          alert.material?.name ?? 'Alert',
+                          alert.material?.name ?? context.tr.alertsLabel,
                           alert.message,
-                          'Created: ${alert.createdAt.toLocal().toString().substring(0, 16)}',
+                          '${context.tr.generatedPrefix}${alert.createdAt.toLocal().toString().substring(0, 16)}',
                           color,
                           icon,
                         ),
@@ -632,7 +656,7 @@ class _ReportsPageState extends State<ReportsPage> {
       clipBehavior: Clip.none,
       children: [
         IconButton(
-          tooltip: 'Edit request notifications',
+          tooltip: context.tr.editRequests,
           onPressed: _showOrderNotifications,
           icon: const Icon(Icons.notifications_none),
         ),
@@ -661,6 +685,7 @@ class _ReportsPageState extends State<ReportsPage> {
   }
 
   void _showOrderNotifications() {
+    final t = this.context.tr;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -668,12 +693,12 @@ class _ReportsPageState extends State<ReportsPage> {
           final notifications = NotificationService.getAll();
           return AlertDialog(
             title: Text(
-              'Edit Requests (${NotificationService.getUnread().length})',
+              '${t.editRequests} (${NotificationService.getUnread().length})',
             ),
             content: SizedBox(
               width: 520,
               child: notifications.isEmpty
-                  ? const Text('No edit request notifications')
+                  ? Text(t.noEditRequests)
                   : ListView.separated(
                       shrinkWrap: true,
                       itemCount: notifications.length,
@@ -689,9 +714,9 @@ class _ReportsPageState extends State<ReportsPage> {
                           ),
                           title: Text(item.materialName ?? item.title),
                           subtitle: Text(
-                            'SKU: ${item.productSku ?? '-'}\n'
+                            '${t.sku}: ${item.productSku ?? '-'}\n'
                             'Proposed expiry: ${_formatRawDate(item.proposedExpiry ?? '')}\n'
-                            'Manager: ${item.managerName ?? '-'}',
+                            '${t.manager}: ${item.managerName ?? '-'}',
                           ),
                           isThreeLine: true,
                           trailing: TextButton(
@@ -702,7 +727,7 @@ class _ReportsPageState extends State<ReportsPage> {
                               Navigator.pop(ctx);
                               widget.onGoToOrders?.call();
                             },
-                            child: const Text('Go to Orders'),
+                            child: Text(t.goToOrders),
                           ),
                         );
                       },
@@ -715,11 +740,11 @@ class _ReportsPageState extends State<ReportsPage> {
                   setState(() {});
                   Navigator.pop(ctx);
                 },
-                child: const Text('Mark All Read'),
+                child: Text(t.markAllRead),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Close'),
+                child: Text(t.close),
               ),
             ],
           );
@@ -830,24 +855,30 @@ class _ReportsPageState extends State<ReportsPage> {
 
   Widget _buildStatusBadge(String status, bool isDark) {
     Color bg, text;
+    String displayStatus;
     switch (status) {
       case 'Good':
+        displayStatus = context.tr.statusGood;
         bg = const Color(0xFF28A745).withOpacity(0.15);
         text = const Color(0xFF28A745);
         break;
       case 'Expiring Soon':
+        displayStatus = context.tr.statusExpiringSoon;
         bg = const Color(0xFFFFA500).withOpacity(0.15);
         text = const Color(0xFFFFA500);
         break;
       case 'Expired':
+        displayStatus = context.tr.statusExpired;
         bg = const Color(0xFFDC3545).withOpacity(0.15);
         text = const Color(0xFFDC3545);
         break;
       case 'Low Stock':
+        displayStatus = context.tr.statusLowStock;
         bg = Colors.orange.withOpacity(0.15);
         text = Colors.orange;
         break;
       default:
+        displayStatus = status;
         bg = Colors.grey.withOpacity(0.15);
         text = Colors.grey;
     }
@@ -858,7 +889,7 @@ class _ReportsPageState extends State<ReportsPage> {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        status,
+        displayStatus,
         style: TextStyle(
           color: text,
           fontWeight: FontWeight.w600,

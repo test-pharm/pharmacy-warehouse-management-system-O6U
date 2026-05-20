@@ -8,6 +8,7 @@ import 'package:graduation_project/Services/orderService.dart';
 import 'package:graduation_project/widgets/AddMaterial.dart';
 import 'package:graduation_project/widgets/ExpiryEditDialog.dart';
 import 'package:graduation_project/widgets/ExportMaterial.dart';
+import 'package:graduation_project/Models/app_localizations.dart';
 
 class InventoryPage extends StatefulWidget {
   const InventoryPage({super.key});
@@ -68,7 +69,7 @@ class _InventoryPageState extends State<InventoryPage> {
             controller: _searchCtrl,
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              hintText: 'Search by product name, SKU, or storage location...',
+              hintText: context.tr.searchByNameOrSku,
               prefixIcon: const Icon(Icons.search),
               filled: true,
               fillColor: Theme.of(context).cardColor,
@@ -89,12 +90,12 @@ class _InventoryPageState extends State<InventoryPage> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _availabilityFilter,
-              items: const [
-                DropdownMenuItem(value: 'All', child: Text('All')),
-                DropdownMenuItem(value: 'Available', child: Text('Available')),
+              items: [
+                DropdownMenuItem(value: 'All', child: Text(context.tr.all)),
+                DropdownMenuItem(value: 'Available', child: Text(context.tr.available)),
                 DropdownMenuItem(
                   value: 'Unavailable',
-                  child: Text('Unavailable'),
+                  child: Text(context.tr.unavailable),
                 ),
               ],
               onChanged: (value) {
@@ -107,7 +108,7 @@ class _InventoryPageState extends State<InventoryPage> {
         ),
         const SizedBox(width: 12),
         IconButton(
-          tooltip: 'Refresh products',
+          tooltip: context.tr.refreshTooltip,
           onPressed: provider.loadProducts,
           icon: const Icon(Icons.refresh),
         ),
@@ -116,13 +117,13 @@ class _InventoryPageState extends State<InventoryPage> {
           ElevatedButton.icon(
             onPressed: () => _openProductDialog(context, provider),
             icon: const Icon(Icons.add),
-            label: const Text('Add Product'),
+            label: Text(context.tr.addProduct),
           ),
           const SizedBox(width: 8),
           ElevatedButton.icon(
             onPressed: () => _openExportDialog(context, provider),
             icon: const Icon(Icons.upload_outlined),
-            label: const Text('Export Product'),
+            label: Text(context.tr.exportProductBtn),
           ),
         ],
       ],
@@ -144,7 +145,7 @@ class _InventoryPageState extends State<InventoryPage> {
           const SizedBox(height: 12),
           ElevatedButton(
             onPressed: provider.loadProducts,
-            child: const Text('Retry'),
+            child: Text(context.tr.retry),
           ),
         ],
       ),
@@ -163,8 +164,8 @@ class _InventoryPageState extends State<InventoryPage> {
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Center(
-          child: Text('No products found for the current filters.'),
+        child: Center(
+          child: Text(context.tr.noProductsFiltered),
         ),
       );
     }
@@ -185,14 +186,14 @@ class _InventoryPageState extends State<InventoryPage> {
             sortAscending: _sortAscending,
             columns: [
               DataColumn(
-                label: const Text('Name'),
+                label: Text(context.tr.materialName),
                 onSort: (colIndex, asc) => setState(() {
                   _sortColumnIndex = colIndex;
                   _sortAscending = asc;
                 }),
               ),
               DataColumn(
-                label: const Text('Quantity'),
+                label: Text(context.tr.quantity),
                 numeric: true,
                 onSort: (colIndex, asc) => setState(() {
                   _sortColumnIndex = colIndex;
@@ -200,35 +201,35 @@ class _InventoryPageState extends State<InventoryPage> {
                 }),
               ),
               DataColumn(
-                label: const Text('Unit'),
+                label: Text(context.tr.unit),
                 onSort: (colIndex, asc) => setState(() {
                   _sortColumnIndex = colIndex;
                   _sortAscending = asc;
                 }),
               ),
               DataColumn(
-                label: const Text('Availability'),
+                label: Text(context.tr.availabilityColumn),
                 onSort: (colIndex, asc) => setState(() {
                   _sortColumnIndex = colIndex;
                   _sortAscending = asc;
                 }),
               ),
               DataColumn(
-                label: const Text('Expiry Date'),
+                label: Text(context.tr.expiryDate),
                 onSort: (colIndex, asc) => setState(() {
                   _sortColumnIndex = colIndex;
                   _sortAscending = asc;
                 }),
               ),
-              const DataColumn(label: Text('Actions')),
+              DataColumn(label: Text(context.tr.actions)),
             ],
             rows: products.map((product) {
               return DataRow(
                 cells: [
-                  DataCell(_productSummary(product)),
+                  DataCell(_productSummary(context, product)),
                   DataCell(Text(_databaseQuantityText(product))),
                   DataCell(Text(product.unit.isEmpty ? '-' : product.unit)),
-                  DataCell(_availabilityChip(product.isAvailable)),
+                  DataCell(_availabilityChip(context, product.isAvailable)),
                   DataCell(Text(_formatDate(product.expiryDate))),
                   DataCell(_buildActions(context, provider, product)),
                 ],
@@ -240,7 +241,7 @@ class _InventoryPageState extends State<InventoryPage> {
     );
   }
 
-  Widget _productSummary(MaterialModel product) {
+  Widget _productSummary(BuildContext context, MaterialModel product) {
     final textColor = Theme.of(context).textTheme.bodySmall?.color ?? Colors.black54;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -249,14 +250,14 @@ class _InventoryPageState extends State<InventoryPage> {
         Text(product.name, style: const TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(height: 4),
         Text(
-          'SKU: ${product.sku}',
+          '${context.tr.skuPrefix}${product.sku}',
           style: TextStyle(fontSize: 12, color: textColor),
         ),
       ],
     );
   }
 
-  Widget _availabilityChip(bool isAvailable) {
+  Widget _availabilityChip(BuildContext context, bool isAvailable) {
     final color = isAvailable ? Colors.green : Colors.orange;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -265,7 +266,7 @@ class _InventoryPageState extends State<InventoryPage> {
         borderRadius: BorderRadius.circular(24),
       ),
       child: Text(
-        isAvailable ? 'Available' : 'Unavailable',
+        isAvailable ? context.tr.available : context.tr.unavailable,
         style: TextStyle(color: color, fontWeight: FontWeight.w600),
       ),
     );
@@ -278,7 +279,7 @@ class _InventoryPageState extends State<InventoryPage> {
   ) {
     if (!AuthService.isWarehouseManager) {
       return IconButton(
-        tooltip: 'View details',
+        tooltip: context.tr.viewDetailsTooltip,
         onPressed: () => _showDetails(context, product),
         icon: const Icon(Icons.visibility_outlined),
       );
@@ -288,13 +289,13 @@ class _InventoryPageState extends State<InventoryPage> {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          tooltip: 'Edit product',
+          tooltip: context.tr.editProduct,
           onPressed: () =>
               _openProductDialog(context, provider, existingProduct: product),
           icon: const Icon(Icons.edit_outlined),
         ),
         IconButton(
-          tooltip: 'Delete product',
+          tooltip: context.tr.deleteProductTooltip,
           onPressed: () => _confirmDelete(context, provider, product),
           icon: const Icon(Icons.delete_outline),
           color: Colors.red,
@@ -359,7 +360,7 @@ class _InventoryPageState extends State<InventoryPage> {
             : int.tryParse(payload['categoryId']?.toString() ?? '') ?? 0,
         type: OrderType.add,
         status: OrderStatus.completed,
-        createdBy: AuthService.currentUser?.fullName ?? 'Unknown user',
+        createdBy: AuthService.currentUser?.fullName ?? context.tr.unknownUser,
       ),
     );
 
@@ -367,8 +368,8 @@ class _InventoryPageState extends State<InventoryPage> {
       SnackBar(
         content: Text(
           isExistingStockAdd
-              ? 'Stock updated successfully.'
-              : 'Product added successfully.',
+              ? context.tr.stockUpdated
+              : context.tr.productAdded,
         ),
       ),
     );
@@ -405,7 +406,7 @@ class _InventoryPageState extends State<InventoryPage> {
         categoryId: result.product.categoryId,
         type: OrderType.export,
         status: OrderStatus.completed,
-        createdBy: AuthService.currentUser?.fullName ?? 'Unknown user',
+        createdBy: AuthService.currentUser?.fullName ?? context.tr.unknownUser,
       ),
     );
 
@@ -417,8 +418,8 @@ class _InventoryPageState extends State<InventoryPage> {
       SnackBar(
         content: Text(
           outOfStock
-              ? '${result.quantity} units of ${result.product.name} exported. Item is now out of stock and marked Unavailable.'
-              : '${result.quantity} units of ${result.product.name} exported successfully.',
+              ? context.tr.outOfStockWarning(result.quantity, result.product.name)
+              : context.tr.unitsDispatched(result.quantity, result.product.name),
         ),
         backgroundColor: outOfStock ? Colors.orange : null,
       ),
@@ -435,7 +436,7 @@ class _InventoryPageState extends State<InventoryPage> {
     );
     if (newExpiry == null) return;
 
-    final createdBy = AuthService.currentUser?.fullName ?? 'Unknown user';
+    final createdBy = AuthService.currentUser?.fullName ?? context.tr.unknownUser;
     OrderService.addOrder(
       OrderModel(
         productId: product.id,
@@ -454,7 +455,7 @@ class _InventoryPageState extends State<InventoryPage> {
 
     NotificationService.addNotification(
       AppNotification(
-        title: 'Edit Request',
+        title: context.tr.editRequests,
         body:
             '$createdBy requested expiry change for ${product.name} (${product.sku})',
         materialName: product.name,
@@ -473,8 +474,8 @@ class _InventoryPageState extends State<InventoryPage> {
 
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Edit request submitted. Awaiting supervisor approval.'),
+      SnackBar(
+        content: Text('${context.tr.editRequestSubmitted}\n${context.tr.awaitingApproval}'),
       ),
     );
   }
@@ -487,17 +488,17 @@ class _InventoryPageState extends State<InventoryPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Product'),
-        content: Text('Are you sure you want to delete "${product.name}"?'),
+        title: Text(context.tr.deleteTitle),
+        content: Text(context.tr.deleteConfirmNamed(product.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
+            child: Text(context.tr.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            child: Text(context.tr.delete, style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -512,9 +513,9 @@ class _InventoryPageState extends State<InventoryPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$productName will be deleted...'),
+        content: Text('$productName ${context.tr.deleteTitle}...'),
         action: SnackBarAction(
-          label: 'Undo',
+          label: context.tr.undo,
           onPressed: () => _cancelled = true,
         ),
         duration: const Duration(seconds: 4),
@@ -529,7 +530,7 @@ class _InventoryPageState extends State<InventoryPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(error ?? '$productName deleted successfully.'),
+        content: Text(error ?? context.tr.productDeleted(productName)),
         backgroundColor: error == null ? Colors.green : Colors.red,
       ),
     );
@@ -581,7 +582,7 @@ class _InventoryPageState extends State<InventoryPage> {
                           Text(product.name,
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textColor)),
                           const SizedBox(height: 2),
-                          Text('SKU: ${product.sku}',
+                          Text('${context.tr.skuPrefix}${product.sku}',
                             style: TextStyle(fontSize: 13, color: mutedColor)),
                         ],
                       ),
@@ -593,20 +594,20 @@ class _InventoryPageState extends State<InventoryPage> {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    _detailRow(Icons.category_outlined, 'Category', product.category.isNotEmpty ? product.category : product.categoryId.toString()),
+                    _detailRow(Icons.category_outlined, context.tr.category, product.category.isNotEmpty ? product.category : product.categoryId.toString()),
                     const Divider(height: 20),
-                    _detailRow(Icons.inventory_outlined, 'Quantity', '${product.quantity} ${product.unit}'),
+                    _detailRow(Icons.inventory_outlined, context.tr.quantity, '${product.quantity} ${product.unit}'),
                     const Divider(height: 20),
-                    _detailRow(Icons.qr_code_outlined, 'Lot / Batch', product.lot.isEmpty ? '-' : product.lot),
+                    _detailRow(Icons.qr_code_outlined, context.tr.logNumber, product.lot.isEmpty ? '-' : product.lot),
                     const Divider(height: 20),
-                    _detailRow(Icons.location_on_outlined, 'Storage', product.location.isEmpty ? '-' : product.location),
+                    _detailRow(Icons.location_on_outlined, context.tr.storageLocation, product.location.isEmpty ? '-' : product.location),
                     const Divider(height: 20),
-                    _detailRow(Icons.calendar_today_outlined, 'Expiry Date', _formatDate(product.expiryDate)),
+                    _detailRow(Icons.calendar_today_outlined, context.tr.expiryDate, _formatDate(product.expiryDate)),
                     const Divider(height: 20),
                     _detailRow(
                       Icons.check_circle_outlined,
-                      'Status',
-                      product.isAvailable ? 'Available' : 'Unavailable',
+                      context.tr.status,
+                      product.isAvailable ? context.tr.available : context.tr.unavailable,
                       valueColor: product.isAvailable ? Colors.green : Colors.orange,
                     ),
                   ],
@@ -619,7 +620,7 @@ class _InventoryPageState extends State<InventoryPage> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(dialogContext),
-                      child: Text('Close', style: TextStyle(color: mutedColor)),
+                      child: Text(context.tr.close, style: TextStyle(color: mutedColor)),
                     ),
                   ],
                 ),

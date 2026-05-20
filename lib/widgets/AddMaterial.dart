@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graduation_project/Models/ProductProvider.dart';
 import 'package:graduation_project/Models/materialModel.dart';
+import 'package:graduation_project/Models/app_localizations.dart';
 
 class AddMaterialDialog extends StatefulWidget {
   final MaterialModel? initialProduct;
@@ -62,7 +63,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
         title: const Text('Discard changes?'),
         content: const Text('You have unsaved changes. Are you sure you want to discard them?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr.cancel)),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -209,7 +210,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.isEditing ? 'Edit Product' : 'Add Product',
+                            widget.isEditing ? context.tr.editProduct : context.tr.addProduct,
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -218,7 +219,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Create a new material or add stock to an existing one.',
+                            context.tr.addMaterialSubtitle,
                             style: TextStyle(
                               fontSize: 13,
                               color: isDark ? Colors.white60 : Colors.black54,
@@ -276,13 +277,13 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
                         final shouldPop = await _maybeDiscard();
                         if (shouldPop && context.mounted) Navigator.pop(context);
                       },
-                      child: const Text('Cancel'),
+                      child: Text(context.tr.cancel),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
                       onPressed: _submit,
                       icon: Icon(_mode == 0 ? Icons.add : Icons.playlist_add),
-                      label: Text(_mode == 0 ? 'Add Product' : 'Add Stock'),
+                      label: Text(_mode == 0 ? context.tr.addProduct : context.tr.add),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1CA0A5),
                         foregroundColor: Colors.white,
@@ -313,22 +314,22 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
           children: [
             _buildField(
               controller: _nameController,
-              label: 'Material Name',
+              label: context.tr.materialName,
               hintText: 'e.g. Paracetamol',
               icon: Icons.medication_outlined,
               isDark: isDark,
             ),
             _buildField(
               controller: _skuController,
-              label: 'Material SKU',
-              hintText: 'e.g. MED-1001',
+              label: context.tr.materialSku,
+              hintText: context.tr.skuHint,
               icon: Icons.qr_code_2_outlined,
               isDark: isDark,
             ),
             _buildField(
               controller: _quantityController,
-              label: 'Quantity',
-              hintText: '0',
+              label: context.tr.quantity,
+              hintText: context.tr.quantityHint,
               icon: Icons.inventory_2_outlined,
               keyboardType: TextInputType.number,
               isDark: isDark,
@@ -336,29 +337,29 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
             ),
             _buildField(
               controller: _unitController,
-              label: 'Unit',
-              hintText: 'box / bottle / strip',
+              label: context.tr.unit,
+              hintText: context.tr.unitHint,
               icon: Icons.straighten_outlined,
               isDark: isDark,
             ),
             _buildField(
               controller: _logNumberController,
-              label: 'Log Number',
-              hintText: 'LOT-2026-01',
+              label: context.tr.logNumber,
+              hintText: context.tr.logHint,
               icon: Icons.badge_outlined,
               isDark: isDark,
             ),
             _buildField(
               controller: _storageLocationController,
-              label: 'Storage Location',
-              hintText: 'Rack A - Shelf 2',
+              label: context.tr.storageLocation,
+              hintText: context.tr.locationHint,
               icon: Icons.location_on_outlined,
               isDark: isDark,
             ),
             _buildField(
               controller: _categoryIdController,
-              label: 'Category ID',
-              hintText: '1',
+              label: context.tr.categoryId,
+              hintText: context.tr.categoryIdHint,
               icon: Icons.category_outlined,
               keyboardType: TextInputType.number,
               isDark: isDark,
@@ -371,7 +372,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
         SwitchListTile.adaptive(
           contentPadding: EdgeInsets.zero,
           title: Text(
-            'Available for use',
+            context.tr.isAvailable,
             style: TextStyle(
               fontWeight: FontWeight.w600,
               color: isDark ? Colors.white : Colors.black87,
@@ -397,8 +398,8 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
       children: [
         _buildField(
           controller: _existingSearchController,
-          label: 'Search by Name or SKU',
-          hintText: 'Type material name or SKU',
+          label: context.tr.searchByNameOrSku,
+          hintText: context.tr.typeHintSearch,
           icon: Icons.search,
           isDark: isDark,
           validator: (_) => null,
@@ -413,7 +414,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
             child: TextButton.icon(
               onPressed: _clearExistingSelection,
               icon: const Icon(Icons.clear),
-              label: const Text('Clear'),
+              label: Text(context.tr.clear),
             ),
           ),
         const SizedBox(height: 12),
@@ -423,7 +424,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
           children: [
             _buildField(
               controller: _nameController,
-              label: 'Material Name',
+              label: context.tr.materialName,
               hintText: 'Select material',
               icon: Icons.medication_outlined,
               isDark: isDark,
@@ -432,7 +433,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
             ),
             _buildField(
               controller: _skuController,
-              label: 'Material SKU',
+              label: context.tr.materialSku,
               hintText: 'Select SKU',
               icon: Icons.qr_code_2_outlined,
               isDark: isDark,
@@ -441,7 +442,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
             ),
             _buildField(
               controller: _quantityController,
-              label: 'Quantity to Add',
+              label: context.tr.quantity,
               hintText: '1',
               icon: Icons.inventory_2_outlined,
               keyboardType: TextInputType.number,
@@ -450,16 +451,16 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
             ),
             _buildField(
               controller: _unitController,
-              label: 'Unit',
-              hintText: 'Unit',
+              label: context.tr.unit,
+              hintText: context.tr.unit,
               icon: Icons.straighten_outlined,
               isDark: isDark,
               readOnly: selected,
             ),
             _buildField(
               controller: _categoryIdController,
-              label: 'Category ID',
-              hintText: 'Category',
+              label: context.tr.categoryId,
+              hintText: context.tr.category,
               icon: Icons.category_outlined,
               keyboardType: TextInputType.number,
               isDark: isDark,
@@ -494,7 +495,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
           return ListTile(
             dense: true,
             title: Text(product.name),
-            subtitle: Text('SKU: ${product.sku} | Stock: ${product.quantity}'),
+            subtitle: Text('${context.tr.skuPrefix}${product.sku} | Stock: ${product.quantity}'),
             onTap: () => _selectExistingProduct(product),
           );
         },
@@ -509,7 +510,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Expiry Date',
+            context.tr.expiryDate,
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -530,11 +531,11 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
                   borderSide: BorderSide.none,
                 ),
                 errorText: _submitted && _expiryDate == null
-                    ? 'Please select an expiry date'
+                    ? context.tr.pleaseSelectDate
                     : null,
               ),
               child: Text(
-                _expiryDate == null ? 'Select date' : _formatDate(_expiryDate!),
+                _expiryDate == null ? context.tr.selectDate : _formatDate(_expiryDate!),
                 style: TextStyle(color: isDark ? Colors.white : Colors.black87),
               ),
             ),
@@ -580,7 +581,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
                 : validator ??
                       (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Required';
+                          return context.tr.required;
                         }
                         return null;
                       },
@@ -665,16 +666,16 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
   }
 
   String? _validateNonNegativeInteger(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Required';
+    if (value == null || value.trim().isEmpty) return context.tr.required;
     final parsed = int.tryParse(value.trim());
     if (parsed == null || parsed < 0) return 'Enter a valid number';
     return null;
   }
 
   String? _validatePositiveInteger(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Required';
+    if (value == null || value.trim().isEmpty) return context.tr.required;
     final parsed = int.tryParse(value.trim());
-    if (parsed == null || parsed <= 0) return 'Enter a positive number';
+    if (parsed == null || parsed <= 0) return context.tr.positiveNumber;
     return null;
   }
 

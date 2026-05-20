@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:graduation_project/Models/UserRoleModel.dart';
+import 'package:graduation_project/Models/app_localizations.dart';
 import 'package:graduation_project/Services/notificationService.dart';
 import 'package:http/http.dart' as http;
 
@@ -100,14 +101,14 @@ class _UserInfoPageState extends State<UserInfoPage> {
               children: [
                 if (widget.showBackButton) ...[
                   IconButton(
-                    tooltip: 'Back',
+                    tooltip: context.tr.back,
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.arrow_back),
                   ),
                   const SizedBox(width: 8),
                 ],
                 Text(
-                  'Account Settings',
+                  context.tr.accountSettings,
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -119,7 +120,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   ElevatedButton.icon(
                     onPressed: () => setState(() => _isEditing = true),
                     icon: const Icon(Icons.edit),
-                    label: const Text('Edit Profile'),
+                    label: Text(context.tr.editProfile),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1CA0A5),
                       foregroundColor: Colors.white,
@@ -139,7 +140,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Personal Information',
+                      context.tr.personalInfo,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -149,7 +150,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     const SizedBox(height: 20),
                     _field(
                       controller: _nameController,
-                      label: 'Full Name',
+                      label: context.tr.fullName,
                       icon: Icons.person_outline,
                       enabled: _isEditing,
                       isDark: isDark,
@@ -157,7 +158,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     const SizedBox(height: 16),
                     _field(
                       controller: _phoneController,
-                      label: 'Phone Number',
+                      label: context.tr.phoneNumber,
                       icon: Icons.phone_outlined,
                       enabled: _isEditing,
                       isDark: isDark,
@@ -173,12 +174,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                     _loadUserData();
                                     setState(() => _isEditing = false);
                                   },
-                            child: const Text('Cancel'),
+                            child: Text(context.tr.cancel),
                           ),
                           const SizedBox(width: 12),
                           ElevatedButton(
                             onPressed: _saving ? null : _saveChanges,
-                            child: Text(_saving ? 'Saving...' : 'Save Changes'),
+                            child: Text(_saving ? context.tr.saving : context.tr.saveChanges),
                           ),
                         ],
                       ),
@@ -195,7 +196,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Account Settings',
+                    context.tr.accountSettings,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -208,7 +209,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       Icons.lock_outline,
                       color: Color(0xFF1CA0A5),
                     ),
-                    title: const Text('Change Password'),
+                    title: Text(context.tr.changePassword),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: _showChangePasswordDialog,
                   ),
@@ -218,7 +219,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       Icons.notifications_outlined,
                       color: Color(0xFF1CA0A5),
                     ),
-                    title: const Text('Notifications'),
+                    title: Text(context.tr.notifications),
                     trailing: _notificationBadge(),
                     onTap: _showNotificationsDialog,
                   ),
@@ -228,12 +229,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       Icons.security_outlined,
                       color: Color(0xFF1CA0A5),
                     ),
-                    title: const Text('Privacy & Security'),
+                    title: Text(context.tr.privacySecurity),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => showDialog<void>(
                       context: context,
                       builder: (_) => AlertDialog(
-                        title: const Text('Privacy & Security'),
+                        title: Text(context.tr.privacySecurity),
                         content: const Text('Privacy settings coming soon.'),
                         actions: [
                           TextButton(
@@ -283,7 +284,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
               children: [
                 Text(
                   _nameController.text.isEmpty
-                      ? 'Unknown user'
+                      ? context.tr.unknownUser
                       : _nameController.text,
                   style: TextStyle(
                     fontSize: 22,
@@ -324,7 +325,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
         border: Border.all(color: roleColor.withOpacity(0.3)),
       ),
       child: Text(
-        isManager ? 'Warehouse Manager' : 'Supervisor',
+        isManager ? context.tr.warehouseManager : context.tr.supervisor,
         style: TextStyle(color: roleColor, fontWeight: FontWeight.w700),
       ),
     );
@@ -387,7 +388,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
             : (isDark ? Colors.grey[850] : Colors.grey[100]),
       ),
       validator: (value) {
-        if (value == null || value.trim().isEmpty) return 'Required';
+        if (value == null || value.trim().isEmpty) return context.tr.required;
         return null;
       },
     );
@@ -398,11 +399,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Notifications'),
+          title: Text(context.tr.notifications),
           content: SizedBox(
             width: 460,
             child: NotificationService.getAll().isEmpty
-                ? const Text('No notifications')
+                ? Text(context.tr.noNotifications)
                 : ListView(
                     shrinkWrap: true,
                     children: NotificationService.getAll().map((item) {
@@ -420,7 +421,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                   setState(() {});
                                   setDialogState(() {});
                                 },
-                                child: const Text('Mark Read'),
+                                child: Text(context.tr.markRead),
                               ),
                       );
                     }).toList(),
@@ -433,11 +434,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 setState(() {});
                 Navigator.pop(ctx);
               },
-              child: const Text('Mark All Read'),
+              child: Text(context.tr.markAllRead),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Close'),
+              child: Text(context.tr.close),
             ),
           ],
         ),
@@ -487,7 +488,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Change Password'),
+      title: Text(context.tr.changePassword),
       content: SizedBox(
         width: 520,
         child: Stepper(
@@ -548,14 +549,14 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                   TextField(
                     controller: _confirmPasswordCtrl,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Confirm New Password',
+                    decoration: InputDecoration(
+                      labelText: context.tr.confirmPassword,
                     ),
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: _loading ? null : _changePassword,
-                    child: const Text('Change Password'),
+                    child: Text(context.tr.changePassword),
                   ),
                 ],
               ),
@@ -566,7 +567,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Close'),
+          child: Text(context.tr.close),
         ),
       ],
     );
@@ -625,7 +626,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
       return;
     }
     if (_newPasswordCtrl.text != _confirmPasswordCtrl.text) {
-      setState(() => _error = 'Passwords do not match.');
+      setState(() => _error = context.tr.passwordsDoNotMatch);
       return;
     }
     await _post(

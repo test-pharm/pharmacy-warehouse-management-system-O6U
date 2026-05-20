@@ -169,7 +169,6 @@ class ProductProvider extends ChangeNotifier {
   Future<void> _replaceProductsFromApi() async {
     _products = await _fetchProductsFromApi();
     _applyPendingOverrides();
-    await _translateProductNames();
     _syncDerivedState();
   }
 

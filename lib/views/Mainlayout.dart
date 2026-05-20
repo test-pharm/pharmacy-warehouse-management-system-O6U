@@ -9,6 +9,7 @@ import 'package:graduation_project/views/ReportsPage.dart';
 import 'package:graduation_project/views/UserInfo.dart';
 import 'package:graduation_project/main.dart';
 import 'package:graduation_project/Services/update_service.dart';
+import 'package:graduation_project/views/StocktakePage.dart';
 
 class MainLayout extends StatefulWidget {
   final int initialIndex;
@@ -43,6 +44,7 @@ class _MainLayoutState extends State<MainLayout> {
     return const [
       DashboardPage(),
       InventoryPage(),
+      StocktakePage(),
       ReportsPage(),
       OrdersPage(),
       UserInfoPage(),
@@ -59,9 +61,10 @@ class _MainLayoutState extends State<MainLayout> {
     return [
       _MenuItem(Icons.dashboard, tr.dashboard, 0),
       _MenuItem(Icons.inventory_2, tr.inventory, 1),
-      _MenuItem(Icons.bar_chart, tr.reports, 2),
-      _MenuItem(Icons.list_alt, tr.orders, 3),
-      _MenuItem(Icons.settings, tr.settings, 4),
+      _MenuItem(Icons.assignment, 'Stocktake', 2),
+      _MenuItem(Icons.bar_chart, tr.reports, 3),
+      _MenuItem(Icons.list_alt, tr.orders, 4),
+      _MenuItem(Icons.settings, tr.settings, 5),
     ];
   }
 

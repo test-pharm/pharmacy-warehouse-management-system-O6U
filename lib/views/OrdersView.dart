@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:graduation_project/Models/app_localizations.dart';
 import 'package:graduation_project/Models/ProductProvider.dart';
 import 'package:graduation_project/Models/UserRoleModel.dart';
 import 'package:graduation_project/Models/orderModel.dart';
@@ -78,7 +79,7 @@ class _OrdersPageState extends State<OrdersPage> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Orders History',
+                  context.tr.ordersHistory,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -93,7 +94,7 @@ class _OrdersPageState extends State<OrdersPage> {
                 ElevatedButton.icon(
                   onPressed: _printOrders,
                   icon: const Icon(Icons.print, size: 18),
-                  label: const Text('Export Orders'),
+                  label: Text(context.tr.export),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0D6EFD),
                     foregroundColor: Colors.white,
@@ -109,26 +110,17 @@ class _OrdersPageState extends State<OrdersPage> {
                 _dropdown(
                   isDark,
                   _selectedDateFilter,
-                  const [
-                    'Filter by Date',
-                    'Today',
-                    'This Week',
-                    'This Month',
-                    'This Year',
-                  ],
+                  ['Filter by Date', 'Today', 'This Week', 'This Month', 'This Year'],
                   (value) => setState(() => _selectedDateFilter = value!),
+                  _dateFilterDisplay,
                 ),
                 const SizedBox(width: 12),
                 _dropdown(
                   isDark,
                   _selectedStatusFilter,
-                  const [
-                    'Filter by Status',
-                    'Completed',
-                    'Pending',
-                    'Canceled',
-                  ],
+                  ['Filter by Status', 'Completed', 'Pending', 'Canceled'],
                   (value) => setState(() => _selectedStatusFilter = value!),
+                  _statusFilterDisplay,
                 ),
               ],
             ),
@@ -137,7 +129,7 @@ class _OrdersPageState extends State<OrdersPage> {
               child: filteredOrders.isEmpty
                   ? Center(
                       child: Text(
-                        'No orders found.',
+                        context.tr.noOrders,
                         style: TextStyle(
                           color: isDark ? Colors.white60 : Colors.black54,
                         ),
@@ -159,13 +151,30 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
+  String _dateFilterDisplay(String value) {
+    return switch (value) {
+      'Filter by Date' => context.tr.filterByDate,
+      _ => value,
+    };
+  }
+
+  String _statusFilterDisplay(String value) {
+    return switch (value) {
+      'Filter by Status' => context.tr.filterByStatus,
+      'Completed' => context.tr.orderStatusCompleted,
+      'Pending' => context.tr.orderStatusPending,
+      'Canceled' => context.tr.orderStatusCanceled,
+      _ => value,
+    };
+  }
+
   Widget _notificationBell() {
     final unreadCount = NotificationService.getUnread().length;
     return Stack(
       clipBehavior: Clip.none,
       children: [
         IconButton(
-          tooltip: 'Edit request notifications',
+          tooltip: context.tr.editRequests,
           onPressed: _showOrderNotifications,
           icon: const Icon(Icons.notifications_none),
         ),
@@ -201,12 +210,12 @@ class _OrdersPageState extends State<OrdersPage> {
           final notifications = NotificationService.getAll();
           return AlertDialog(
             title: Text(
-              'Edit Requests (${NotificationService.getUnread().length})',
+              '${context.tr.editRequests} (${NotificationService.getUnread().length})',
             ),
             content: SizedBox(
               width: 520,
               child: notifications.isEmpty
-                  ? const Text('No edit request notifications')
+                  ? Text(context.tr.noEditRequests)
                   : ListView.separated(
                       shrinkWrap: true,
                       itemCount: notifications.length,
@@ -222,7 +231,7 @@ class _OrdersPageState extends State<OrdersPage> {
                           ),
                           title: Text(item.materialName ?? item.title),
                           subtitle: Text(
-                            'SKU: ${item.productSku ?? '-'}\n'
+                            '${context.tr.sku}: ${item.productSku ?? '-'}\n'
                             'Proposed expiry: ${_formatRawDate(item.proposedExpiry ?? '')}\n'
                             'Manager: ${item.managerName ?? '-'}',
                           ),
@@ -235,7 +244,7 @@ class _OrdersPageState extends State<OrdersPage> {
                               Navigator.pop(ctx);
                               widget.onGoToOrders?.call();
                             },
-                            child: const Text('Go to Orders'),
+                            child: Text(context.tr.goToOrders),
                           ),
                         );
                       },
@@ -248,11 +257,11 @@ class _OrdersPageState extends State<OrdersPage> {
                   setState(() {});
                   Navigator.pop(ctx);
                 },
-                child: const Text('Mark All Read'),
+                child: Text(context.tr.markAllRead),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Close'),
+                child: Text(context.tr.close),
               ),
             ],
           );
@@ -275,7 +284,7 @@ class _OrdersPageState extends State<OrdersPage> {
         onChanged: (_) => setState(() {}),
         style: TextStyle(color: isDark ? Colors.white : Colors.black),
         decoration: InputDecoration(
-          hintText: 'Search by order ID, product, SKU, or user...',
+          hintText: context.tr.searchOrdersHint,
           hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
           prefixIcon: Icon(
             Icons.search,
@@ -296,6 +305,7 @@ class _OrdersPageState extends State<OrdersPage> {
     String value,
     List<String> items,
     void Function(String?) onChanged,
+    String Function(String) label,
   ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -312,7 +322,7 @@ class _OrdersPageState extends State<OrdersPage> {
           dropdownColor: isDark ? const Color(0xFF1A2332) : Colors.white,
           style: TextStyle(color: isDark ? Colors.white : Colors.black),
           items: items
-              .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+              .map((item) => DropdownMenuItem(value: item, child: Text(label(item))))
               .toList(),
           onChanged: onChanged,
         ),
@@ -341,7 +351,7 @@ class _OrdersPageState extends State<OrdersPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Order #${order.id}',
+                  '${context.tr.orders} #${order.id}',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -350,7 +360,7 @@ class _OrdersPageState extends State<OrdersPage> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '${order.productName} - SKU: ${order.productSku}',
+                  '${order.productName} - ${context.tr.sku}: ${order.productSku}',
                   style: TextStyle(
                     fontSize: 13,
                     color: isDark ? Colors.white70 : Colors.black87,
@@ -375,12 +385,12 @@ class _OrdersPageState extends State<OrdersPage> {
             IconButton(
               onPressed: () => _acceptEdit(order),
               icon: const Icon(Icons.check_circle, color: Colors.green),
-              tooltip: 'Accept Edit',
+              tooltip: context.tr.approve,
             ),
             IconButton(
               onPressed: () => _rejectEdit(order),
               icon: const Icon(Icons.cancel, color: Colors.red),
-              tooltip: 'Reject Edit',
+              tooltip: context.tr.reject,
             ),
           ],
           IconButton(
@@ -389,7 +399,7 @@ class _OrdersPageState extends State<OrdersPage> {
               Icons.visibility,
               color: isDark ? Colors.white70 : Colors.black54,
             ),
-            tooltip: 'View Details',
+            tooltip: context.tr.viewDetailsTooltip,
           ),
         ],
       ),
@@ -398,18 +408,18 @@ class _OrdersPageState extends State<OrdersPage> {
 
   Widget _typeBadge(OrderType type) {
     final (label, color) = switch (type) {
-      OrderType.add => ('Added', Colors.green),
-      OrderType.export => ('Exported', Colors.blue),
-      OrderType.edit => ('Edit Request', Colors.orange),
+      OrderType.add => (context.tr.orderTypeAdd, Colors.green),
+      OrderType.export => (context.tr.orderTypeExport, Colors.blue),
+      OrderType.edit => (context.tr.orderTypeEdit, Colors.orange),
     };
     return _badge(label, color);
   }
 
   Widget _statusBadge(OrderStatus status) {
     final (label, color) = switch (status) {
-      OrderStatus.completed => ('Completed', const Color(0xFF28A745)),
-      OrderStatus.pending => ('Pending', const Color(0xFFFFA500)),
-      OrderStatus.canceled => ('Canceled', const Color(0xFFDC3545)),
+      OrderStatus.completed => (context.tr.orderStatusCompleted, const Color(0xFF28A745)),
+      OrderStatus.pending => (context.tr.orderStatusPending, const Color(0xFFFFA500)),
+      OrderStatus.canceled => (context.tr.orderStatusCanceled, const Color(0xFFDC3545)),
     };
     return _badge(label, color);
   }
@@ -473,8 +483,8 @@ class _OrdersPageState extends State<OrdersPage> {
     final product = matches.isEmpty ? null : matches.first;
     if (product == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Product not found in inventory.'),
+        SnackBar(
+          content: Text(context.tr.productNotInInventory),
           backgroundColor: Colors.red,
         ),
       );
@@ -503,7 +513,7 @@ class _OrdersPageState extends State<OrdersPage> {
     final rejected = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Reject Edit Request'),
+        title: Text('${context.tr.reject} ${context.tr.editRequests}'),
         content: TextField(
           controller: reasonController,
           decoration: const InputDecoration(
@@ -515,12 +525,12 @@ class _OrdersPageState extends State<OrdersPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(context.tr.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Reject'),
+            child: Text(context.tr.reject),
           ),
         ],
       ),
@@ -539,31 +549,31 @@ class _OrdersPageState extends State<OrdersPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Order Details'),
+        title: Text(context.tr.ordersTitle),
         content: SizedBox(
           width: 520,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               _detailRow('Order ID', order.id),
-              _detailRow('Product', order.productName),
-              _detailRow('SKU', order.productSku),
-              _detailRow('Quantity', '${order.quantity} ${order.unit}'),
-              _detailRow('Log Number', order.logNumber),
-              _detailRow('Category ID', order.categoryId.toString()),
-              _detailRow('Type', _typeLabel(order.type)),
-              _detailRow('Status', _statusLabel(order.status)),
-              _detailRow('Created By', order.createdBy),
+              _detailRow(context.tr.product, order.productName),
+              _detailRow(context.tr.sku, order.productSku),
+              _detailRow(context.tr.quantity, '${order.quantity} ${order.unit}'),
+              _detailRow(context.tr.logNumber, order.logNumber),
+              _detailRow(context.tr.categoryId, order.categoryId.toString()),
+              _detailRow(context.tr.orderType, _typeLabel(order.type)),
+              _detailRow(context.tr.orderStatus, _statusLabel(order.status)),
+              _detailRow(context.tr.createdBy, order.createdBy),
               _detailRow('Date', _formatDateTime(order.createdAt)),
               if (order.notes != null)
-                _detailRow('Requested Expiry', _formatRawDate(order.notes!)),
+                _detailRow(context.tr.expiryDate, _formatRawDate(order.notes!)),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
+            child: Text(context.tr.close),
           ),
         ],
       ),
@@ -604,25 +614,25 @@ class _OrdersPageState extends State<OrdersPage> {
         pageFormat: PdfPageFormat.a4,
         build: (_) => [
           pw.Text(
-            'Orders Report',
+            context.tr.ordersTitle,
             style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
           ),
           pw.SizedBox(height: 8),
-          pw.Text('Generated: ${_formatDateTime(DateTime.now())}'),
+          pw.Text('${context.tr.generatedPrefix}${_formatDateTime(DateTime.now())}'),
           pw.SizedBox(height: 18),
           pw.Text(
-            'Total orders: ${orders.length} | Completed: $completed | Pending: $pending',
+            '${context.tr.orders}: ${orders.length} | ${context.tr.orderStatusCompleted}: $completed | ${context.tr.orderStatusPending}: $pending',
           ),
           pw.SizedBox(height: 18),
           pw.Table.fromTextArray(
-            headers: const [
+            headers: [
               'Order ID',
-              'Product',
-              'SKU',
-              'Qty',
-              'Type',
-              'Status',
-              'Created By',
+              context.tr.product,
+              context.tr.sku,
+              context.tr.quantity,
+              context.tr.orderType,
+              context.tr.orderStatus,
+              context.tr.createdBy,
               'Date',
             ],
             data: orders
@@ -657,8 +667,8 @@ class _OrdersPageState extends State<OrdersPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Export Orders'),
-        content: const Text('Choose how you would like to export the report:'),
+        title: Text(context.tr.printOrders),
+        content: Text(context.tr.chooseExportMethod),
         actions: [
           TextButton.icon(
             onPressed: () async {
@@ -668,7 +678,7 @@ class _OrdersPageState extends State<OrdersPage> {
               );
             },
             icon: const Icon(Icons.print),
-            label: const Text('Print'),
+            label: Text(context.tr.print),
           ),
           TextButton.icon(
             onPressed: () async {
@@ -680,11 +690,11 @@ class _OrdersPageState extends State<OrdersPage> {
               );
             },
             icon: const Icon(Icons.share),
-            label: const Text('Share / Save PDF'),
+            label: Text(context.tr.saveOrShare),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(context.tr.cancel),
           ),
         ],
       ),
@@ -692,15 +702,15 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 
   String _typeLabel(OrderType type) => switch (type) {
-    OrderType.add => 'Added',
-    OrderType.export => 'Exported',
-    OrderType.edit => 'Edit Request',
+    OrderType.add => context.tr.orderTypeAdd,
+    OrderType.export => context.tr.orderTypeExport,
+    OrderType.edit => context.tr.orderTypeEdit,
   };
 
   String _statusLabel(OrderStatus status) => switch (status) {
-    OrderStatus.completed => 'Completed',
-    OrderStatus.pending => 'Pending',
-    OrderStatus.canceled => 'Canceled',
+    OrderStatus.completed => context.tr.orderStatusCompleted,
+    OrderStatus.pending => context.tr.orderStatusPending,
+    OrderStatus.canceled => context.tr.orderStatusCanceled,
   };
 
   String _formatDateTime(DateTime value) {

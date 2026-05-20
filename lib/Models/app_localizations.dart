@@ -142,7 +142,7 @@ class AppLocalizations {
   // ── Inventory ──────────────────────────────────────────────────────────────
   String get inventoryTitle => isArabic ? 'قائمة المخزون' : 'Inventory List';
   String get addMaterial => isArabic ? 'إضافة مادة' : 'Add Material';
-  String get exportMaterial => isArabic ? 'تصدير مادة' : 'Export Material';
+  String get exportMaterial => isArabic ? 'صرف مادة' : 'Dispatch Material';
   String get materialName => isArabic ? 'اسم المادة' : 'Material Name';
   String get materialSku => isArabic ? 'رمز المادة (SKU)' : 'Material SKU';
   String get quantity => isArabic ? 'الكمية' : 'Quantity';
@@ -192,11 +192,11 @@ class AppLocalizations {
   String get productAdded => isArabic ? 'تمت إضافة المنتج بنجاح' : 'Product added successfully';
 
   // ── Export dialog ──────────────────────────────────────────────────────────
-  String get exportProductTitle => isArabic ? 'تصدير منتج' : 'Export Product';
+  String get exportProductTitle => isArabic ? 'صرف منتج' : 'Dispatch Product';
   String get exportProductSubtitle => isArabic
       ? 'سجّل مغادرة المنتج من مخزون المستودع.'
       : 'Record product leaving warehouse inventory.';
-  String get exportProductBtn => isArabic ? 'تصدير المنتج' : 'Export Product';
+  String get exportProductBtn => isArabic ? 'صرف' : 'Dispatch';
   String get productNotFound => isArabic ? 'المنتج غير موجود في المخزون' : 'Product not found in inventory';
   String get outOfStock => isArabic ? 'هذا الصنف نفد من المخزون' : 'This item is already out of stock';
   String get exceedsStock => isArabic ? 'الكمية المُصدَّرة تتجاوز المخزون المتاح' : 'Export quantity exceeds available stock';
@@ -252,6 +252,93 @@ class AppLocalizations {
   String get registerUser => isArabic ? 'تسجيل مستخدم' : 'Register User';
   String get registerAdmin => isArabic ? 'تسجيل مدير' : 'Register Admin';
   String get userList => isArabic ? 'قائمة المستخدمين' : 'User List';
+
+  // ── Stocktake ──────────────────────────────────────────────────────────────
+  String get stocktake => isArabic ? 'الجرد' : 'Stocktake';
+  String get stocktakeDesc => isArabic
+      ? 'توليد كشف الجرد للعد الفعلي للمخزون في المستودع.'
+      : 'Generate a stocktake sheet to physically count warehouse inventory.';
+  String get totalItems => isArabic ? 'إجمالي الأصناف' : 'total items';
+  String get storageLocationsLabel => isArabic ? 'مواقع تخزين' : 'storage locations';
+  String get generateStocktake => isArabic ? 'توليد كشف الجرد' : 'Generate Stocktake Sheet';
+  String get unspecified => isArabic ? 'غير محدد' : 'Unspecified';
+  String get itemsLabel => isArabic ? 'أصناف' : 'items';
+  String get skuPrefix => isArabic ? 'رمز: ' : 'SKU: ';
+  String get qtyPrefix => isArabic ? 'الكمية: ' : 'Qty: ';
+  String get stocktakeSheet => isArabic ? 'كشف الجرد' : 'Stocktake Sheet';
+  String get pdfInstructions => isArabic
+      ? 'تعليمات: تجول في كل موقع، واحسب الكمية الفعلية، واكتبها في عمود "العدد الفعلي". سجل أي اختلافات.'
+      : 'Instructions: Walk through each location, count the actual quantity, and write it in the "Actual Count" column. Note any discrepancies.';
+  String get locationPrefix => isArabic ? 'الموقع: ' : 'Location: ';
+  String get pdfColumnNum => isArabic ? '#' : '#';
+  String get pdfColumnProductName => isArabic ? 'اسم المنتج' : 'Product Name';
+  String get pdfColumnActualCount => isArabic ? 'العدد الفعلي' : 'Actual Count';
+  String get chooseExportMethod => isArabic ? 'اختر طريقة التصدير:' : 'Choose how to export:';
+  String get saveOrShare => isArabic ? 'حفظ / مشاركة' : 'Save / Share';
+  String get generatedPrefix => isArabic ? 'تم الإنشاء: ' : 'Generated: ';
+  String get errorGeneratingPdf => isArabic ? 'خطأ في إنشاء ملف PDF' : 'Error generating PDF';
+
+  // ── Additional Inventory ───────────────────────────────────────────────────
+  String get refreshTooltip => isArabic ? 'تحديث' : 'Refresh';
+  String get addProduct => isArabic ? 'إضافة منتج' : 'Add Product';
+  String get dispatchBtn => isArabic ? 'صرف' : 'Dispatch';
+  String get retry => isArabic ? 'إعادة المحاولة' : 'Retry';
+  String get noProductsFiltered => isArabic
+      ? 'لا توجد منتجات تطابق الفلاتر الحالية.'
+      : 'No products found for the current filters.';
+  String get availabilityColumn => isArabic ? 'التوفر' : 'Availability';
+  String get viewDetailsTooltip => isArabic ? 'عرض التفاصيل' : 'View details';
+  String get deleteProductTooltip => isArabic ? 'حذف المنتج' : 'Delete product';
+  String get stockUpdated => isArabic ? 'تم تحديث المخزون بنجاح.' : 'Stock updated successfully.';
+  String unitsDispatched(int units, String product) => isArabic
+      ? '$units وحدة من $product تم صرفها.'
+      : '$units units of $product dispatched.';
+  String outOfStockWarning(int units, String product) => isArabic
+      ? '$units وحدة من $product تم صرفها. الصنف نفد من المخزون وتم تعليمه كـ "غير متاح".'
+      : '$units units of $product dispatched. Item is now out of stock and marked Unavailable.';
+  String get editRequestSubmitted => isArabic
+      ? 'تم تقديم طلب تعديل تاريخ الانتهاء.'
+      : 'Edit request submitted.';
+  String get awaitingApproval => isArabic ? 'بإنتظار موافقة المشرف.' : 'Awaiting supervisor approval.';
+  String get deleteTitle => isArabic ? 'حذف المنتج' : 'Delete Product';
+  String deleteConfirmNamed(String name) => isArabic
+      ? 'هل أنت متأكد أنك تريد حذف "$name"؟'
+      : 'Are you sure you want to delete "$name"?';
+  String productDeleted(String name) => isArabic
+      ? 'تم حذف $name بنجاح.'
+      : '$name deleted successfully.';
+  String get undo => isArabic ? 'تراجع' : 'Undo';
+  String get all => isArabic ? 'الكل' : 'All';
+  String get ordersHistory => isArabic ? 'سجل الطلبات' : 'Orders History';
+  String get filterByDate => isArabic ? 'تصفية حسب التاريخ' : 'Filter by Date';
+  String get filterByStatus => isArabic ? 'تصفية حسب الحالة' : 'Filter by Status';
+  String get editRequests => isArabic ? 'طلبات التعديل' : 'Edit Requests';
+  String get noEditRequests => isArabic ? 'لا توجد طلبات تعديل' : 'No edit request notifications';
+  String get goToOrders => isArabic ? 'انتقل إلى الطلبات' : 'Go to Orders';
+  String get searchOrdersHint => isArabic
+      ? 'ابحث برقم الطلب أو المنتج أو الرمز...'
+      : 'Search by order ID, product, SKU, or user...';
+  String get productNotInInventory => isArabic
+      ? 'المنتج غير موجود في المخزون.'
+      : 'Product not found in inventory.';
+  String get reportsAndAnalytics => isArabic ? 'التقارير والتحليلات' : 'Reports & Analytics';
+  String get exportReport => isArabic ? 'تصدير التقرير' : 'Export Report';
+  String get alertsLabel => isArabic ? 'التنبيهات' : 'Alerts';
+  String get accountSettings => isArabic ? 'إعدادات الحساب' : 'Account Settings';
+  String get editProfile => isArabic ? 'تعديل الملف الشخصي' : 'Edit Profile';
+  String get personalInfo => isArabic ? 'المعلومات الشخصية' : 'Personal Information';
+  String get saving => isArabic ? 'جارٍ الحفظ...' : 'Saving...';
+  String get saveChanges => isArabic ? 'حفظ التغييرات' : 'Save Changes';
+  String get privacySecurity => isArabic ? 'الخصوصية والأمان' : 'Privacy & Security';
+  String get updateAvailable => isArabic ? 'يوجد تحديث متاح' : 'Update Available';
+  String get installingUpdate => isArabic ? 'جارٍ تثبيت التحديث...' : 'Installing Update...';
+  String get downloadingUpdate => isArabic ? 'جارٍ تنزيل التحديث...' : 'Downloading Update...';
+  String get updateNow => isArabic ? 'تحديث الآن' : 'Update Now';
+  String get maybeLater => isArabic ? 'ربما لاحقًا' : 'Maybe Later';
+  String get whatsNew => isArabic ? 'ما الجديد:' : "What's new:";
+  String get downloadUrlNotConfigured => isArabic
+      ? 'رابط التنزيل غير مهيأ.'
+      : 'Download URL not configured.';
 
   // ── Printing snackbars ─────────────────────────────────────────────────────
   String get printingOrders => isArabic ? 'جارٍ طباعة الطلبات...' : 'Printing orders…';

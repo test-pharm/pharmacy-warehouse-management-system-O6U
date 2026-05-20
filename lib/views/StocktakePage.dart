@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graduation_project/Models/ProductProvider.dart';
 import 'package:graduation_project/Models/materialModel.dart';
+import 'package:graduation_project/Models/app_localizations.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -20,14 +21,14 @@ class StocktakePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Stocktake',
+            context.tr.stocktake,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 6),
           Text(
-            'Generate a stocktake sheet to physically count warehouse inventory.',
+            context.tr.stocktakeDesc,
             style: TextStyle(
               color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.white60
@@ -76,11 +77,11 @@ class StocktakePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${products.length} total items',
+                    Text('${products.length} ${context.tr.totalItems}',
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
-                    Text('${grouped.length} storage locations',
+                    Text('${grouped.length} ${context.tr.storageLocationsLabel}',
                         style: TextStyle(
                             color: isDark ? Colors.white60 : Colors.black54)),
                   ],
@@ -89,7 +90,7 @@ class StocktakePage extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () => _generateStocktakePdf(context, products),
                 icon: const Icon(Icons.picture_as_pdf),
-                label: const Text('Generate Stocktake Sheet'),
+                label: Text(context.tr.generateStocktake),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0A6B6E),
                   foregroundColor: Colors.white,
@@ -118,7 +119,7 @@ class StocktakePage extends StatelessWidget {
     List<MaterialModel> items,
     bool isDark,
   ) {
-    final label = location.isEmpty ? 'Unspecified' : location;
+    final label = location.isEmpty ? context.tr.unspecified : location;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: isDark ? const Color(0xFF1A2F35) : Colors.white,
@@ -150,7 +151,7 @@ class StocktakePage extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '${items.length} items',
+                  '${items.length} ${context.tr.itemsLabel}',
                   style: TextStyle(
                       color: isDark ? Colors.white54 : Colors.black54,
                       fontSize: 13),
@@ -163,11 +164,11 @@ class StocktakePage extends StatelessWidget {
                 title: Text(item.name,
                     style: TextStyle(
                         color: isDark ? Colors.white : Colors.black87)),
-                subtitle: Text('SKU: ${item.sku}',
+                subtitle: Text('${context.tr.skuPrefix}${item.sku}',
                     style: TextStyle(
                         fontSize: 12,
                         color: isDark ? Colors.white54 : Colors.black54)),
-                trailing: Text('Qty: ${item.quantity}',
+                trailing: Text('${context.tr.qtyPrefix}${item.quantity}',
                     style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white70 : Colors.black87)),
@@ -197,29 +198,28 @@ class StocktakePage extends StatelessWidget {
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text('Stocktake Sheet',
+                    pw.Text(context.tr.stocktakeSheet,
                         style: pw.TextStyle(
                             fontSize: 22, fontWeight: pw.FontWeight.bold)),
                     pw.Text(
-                        'Generated: ${DateTime.now().toString().substring(0, 16)}',
+                        '${context.tr.generatedPrefix}${DateTime.now().toString().substring(0, 16)}',
                         style: const pw.TextStyle(fontSize: 10)),
                   ],
                 ),
               ),
               pw.SizedBox(height: 4),
               pw.Text(
-                'Instructions: Walk through each location, count the actual quantity, '
-                'and write it in the "Actual Count" column. Note any discrepancies.',
+                context.tr.pdfInstructions,
                 style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
               ),
               pw.SizedBox(height: 16),
               ...sortedLocations.expand((location) {
                 final items = grouped[location]!;
-                final label = location.isEmpty ? 'Unspecified' : location;
+                final label = location.isEmpty ? context.tr.unspecified : location;
                 return [
                   pw.Header(
                     level: 1,
-                    child: pw.Text('Location: $label  (${items.length} items)',
+                    child: pw.Text('${context.tr.locationPrefix}$label  (${items.length} ${context.tr.itemsLabel})',
                         style: const pw.TextStyle(fontSize: 14)),
                   ),
                   pw.Table.fromTextArray(
@@ -241,14 +241,14 @@ class StocktakePage extends StatelessWidget {
                       7: const pw.FixedColumnWidth(80),
                     },
                     headers: [
-                      '#',
-                      'SKU',
-                      'Product Name',
-                      'Qty',
-                      'Unit',
-                      'Expiry',
-                      'Location',
-                      'Actual Count',
+                      context.tr.pdfColumnNum,
+                      context.tr.sku,
+                      context.tr.pdfColumnProductName,
+                      context.tr.quantity,
+                      context.tr.unit,
+                      context.tr.expiryDate,
+                      context.tr.storageLocation,
+                      context.tr.pdfColumnActualCount,
                     ],
                     data: List.generate(items.length, (i) {
                       final m = items[i];
@@ -277,7 +277,7 @@ class StocktakePage extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error generating PDF: $e')),
+          SnackBar(content: Text('${context.tr.errorGeneratingPdf}: $e')),
         );
       }
     }
@@ -287,8 +287,8 @@ class StocktakePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Stocktake Sheet'),
-        content: const Text('Choose how to export:'),
+        title: Text(context.tr.stocktakeSheet),
+        content: Text(context.tr.chooseExportMethod),
         actions: [
           TextButton.icon(
             onPressed: () {
@@ -297,7 +297,7 @@ class StocktakePage extends StatelessWidget {
                   onLayout: (fmt) async => pdf.save());
             },
             icon: const Icon(Icons.print),
-            label: const Text('Print'),
+            label: Text(context.tr.print),
           ),
           TextButton.icon(
             onPressed: () async {
@@ -310,11 +310,11 @@ class StocktakePage extends StatelessWidget {
               );
             },
             icon: const Icon(Icons.share),
-            label: const Text('Save / Share'),
+            label: Text(context.tr.saveOrShare),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(context.tr.cancel),
           ),
         ],
       ),
@@ -325,7 +325,7 @@ class StocktakePage extends StatelessWidget {
       List<MaterialModel> products) {
     final map = <String, List<MaterialModel>>{};
     for (final p in products) {
-      final loc = p.location.isEmpty ? 'Unspecified' : p.location;
+      final loc = p.location.isEmpty ? '' : p.location;
       map.putIfAbsent(loc, () => []);
       map[loc]!.add(p);
     }

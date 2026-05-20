@@ -213,7 +213,7 @@ class StocktakePage extends StatelessWidget {
                 style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
               ),
               pw.SizedBox(height: 16),
-              ...sortedLocations.map((location) {
+              ...sortedLocations.expand((location) {
                 final items = grouped[location]!;
                 final label = location.isEmpty ? 'Unspecified' : location;
                 return [
@@ -300,10 +300,11 @@ class StocktakePage extends StatelessWidget {
             label: const Text('Print'),
           ),
           TextButton.icon(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
+              final bytes = await pdf.save();
               Printing.sharePdf(
-                bytes: pdf.save(),
+                bytes: bytes,
                 filename:
                     'stocktake_${DateTime.now().millisecondsSinceEpoch}.pdf',
               );

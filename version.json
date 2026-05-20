@@ -1,9 +1,17 @@
 {
-  "latestVersion": "1.0.0",
-  "latestBuildNumber": 1,
-  "downloadUrl": "https://github.com/MohamedShalaby24/pharmacy-warehouse-management-system-O6U/releases/latest/download/pharmacy-wms-windows.zip",
+  "latestVersion": "1.0.15",
+  "latestBuildNumber": 15,
+  "downloadUrl": "https://github.com/test-pharm/pharmacy-warehouse-management-system-O6U/releases/latest/download/pharmacy-wms-windows.zip",
   "mandatory": false,
   "releaseNotes": [
-    "Initial release with in-app update feature"
+    "Column sorting in inventory table (Name, Qty, Unit, Availability, Expiry)",
+    "Undo delete with 4-second snackbar",
+    "Enhanced product detail dialog with icons and status colors",
+    "Confirm before discard when editing materials",
+    "Auto-refresh dashboard every 60 seconds",
+    "Stocktake sheet — PDF grouped by storage location with blank count column",
+    "Material names now always show in English",
+    "\"Export Material\" renamed to \"Dispatch Material\"",
+    "Full Arabic translation for all pages and dialogs"
   ]
 }

@@ -3,8 +3,6 @@ name: Flutter CI/CD
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
 
@@ -37,10 +35,10 @@ jobs:
         continue-on-error: true
 
   # ─────────────────────────────────────────
-  # JOB 2: Build Windows EXE & Upload to S3
+  # JOB 2: Build Windows EXE & Release
   # ─────────────────────────────────────────
-  build-and-deploy:
-    name: Build EXE & Upload to S3
+  build-and-release:
+    name: Build & Release
     runs-on: windows-latest
     needs: analyze
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -48,6 +46,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -68,17 +68,22 @@ jobs:
         run: |
           Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath pharmacy-wms-windows.zip
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Read version from version.json
+        id: version
+        shell: powershell
+        run: |
+          $json = Get-Content version.json -Raw | ConvertFrom-Json
+          echo "current=$($json.latestVersion)" >> $env:GITHUB_OUTPUT
+          echo "currentBuild=$($json.latestBuildNumber)" >> $env:GITHUB_OUTPUT
+          echo "Version: v$($json.latestVersion) (build $($json.latestBuildNumber))"
+
+      - name: Create / Update GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Upload to S3
-        run: |
-          aws s3 cp pharmacy-wms-windows.zip s3://${{ secrets.S3_BUCKET }}/latest/pharmacy-wms-windows.zip
-
-      - name: Print download link
-        run: |
-          echo "Download URL: https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.AWS_REGION }}.amazonaws.com/latest/pharmacy-wms-windows.zip"
+          tag_name: v${{ steps.version.outputs.current }}
+          name: v${{ steps.version.outputs.current }}
+          files: pharmacy-wms-windows.zip
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

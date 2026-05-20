@@ -8,6 +8,7 @@ import 'package:graduation_project/views/OrdersView.dart';
 import 'package:graduation_project/views/ReportsPage.dart';
 import 'package:graduation_project/views/UserInfo.dart';
 import 'package:graduation_project/main.dart';
+import 'package:graduation_project/Services/update_service.dart';
 
 class MainLayout extends StatefulWidget {
   final int initialIndex;
@@ -257,6 +258,22 @@ class _MainLayoutState extends State<MainLayout> {
                           ),
                         ],
                       ),
+                    ),
+                    FutureBuilder<String>(
+                      future: UpdateService.currentVersion,
+                      builder: (context, snapshot) {
+                        final v = snapshot.data ?? '';
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Text(
+                            v.isNotEmpty ? 'v$v' : '',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? Colors.white38 : Colors.black38,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

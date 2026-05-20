@@ -1,0 +1,9 @@
+{
+  "latestVersion": "1.0.0",
+  "latestBuildNumber": 1,
+  "downloadUrl": "https://github.com/MohamedShalaby24/pharmacy-warehouse-management-system-O6U/releases/latest/download/pharmacy-wms-windows.zip",
+  "mandatory": false,
+  "releaseNotes": [
+    "Initial release with in-app update feature"
+  ]
+}

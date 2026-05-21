@@ -34,7 +34,7 @@ class _ThresholdSettingsPageState extends State<ThresholdSettingsPage> {
     final expiry = int.tryParse(_expiryCtrl.text) ?? 30;
     await ThresholdService.setLowStockThreshold(low);
     await ThresholdService.setExpiringSoonDays(expiry);
-    ProductProvider.of(context, listen: false).loadProducts();
+    await ProductProvider.of(context, listen: false).loadProducts();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.tr.settingsSaved)),

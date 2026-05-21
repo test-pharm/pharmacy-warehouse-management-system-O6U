@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:graduation_project/Models/orderModel.dart';
@@ -545,21 +546,28 @@ class _InventoryPageState extends State<InventoryPage> {
 
     final productName = product.name;
     final productId = product.id;
-    bool _cancelled = false;
+    final completer = Completer<bool>();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$productName ${context.tr.deleteTitle}...'),
         action: SnackBarAction(
           label: context.tr.undo,
-          onPressed: () => _cancelled = true,
+          onPressed: () {
+            completer.complete(true);
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
         ),
         duration: const Duration(seconds: 4),
       ),
     );
 
-    await Future.delayed(const Duration(seconds: 4));
-    if (_cancelled || !context.mounted) return;
+    final undone = await Future.any([
+      completer.future,
+      Future.delayed(const Duration(seconds: 4), () => false),
+    ]);
+
+    if (undone || !context.mounted) return;
 
     final error = await provider.deleteProduct(productId);
     if (!context.mounted) return;

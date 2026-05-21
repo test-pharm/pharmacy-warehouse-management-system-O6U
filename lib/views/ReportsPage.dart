@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:graduation_project/Models/ProductProvider.dart';
 import 'package:graduation_project/Services/alertService.dart';
@@ -450,7 +451,12 @@ class _ReportsPageState extends State<ReportsPage>
         rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(sideTitles: SideTitles(
           showTitles: true, getTitlesWidget: (v, meta) {
-            const labels = ['Good', 'Expiring', 'Expired', 'Low Stock'];
+            final labels = [
+              context.tr.statusGood,
+              context.tr.statusExpiringSoon,
+              context.tr.statusExpired,
+              context.tr.statusLowStock,
+            ];
             return SideTitleWidget(
               meta: meta,
               child: Text(labels[v.toInt()],
@@ -1283,9 +1289,15 @@ class _ReportsPageState extends State<ReportsPage>
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${context.tr.exportReport}: $path'),
-            duration: const Duration(seconds: 4)),
+            duration: const Duration(seconds: 6)),
       );
-      await Process.start(path, []);
+      await Clipboard.setData(ClipboardData(text: path));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${context.tr.exportReport}: $path'),
+              duration: const Duration(seconds: 3)),
+        );
+      }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

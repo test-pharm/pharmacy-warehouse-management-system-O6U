@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:graduation_project/Models/ProductProvider.dart';
 import 'package:graduation_project/Models/UserRoleModel.dart';
 import 'package:graduation_project/Models/app_localizations.dart';
@@ -74,21 +75,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         // Topbar
                         Row(
                           children: [
-                            Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: tr.searchHint,
-                                  prefixIcon: const Icon(Icons.search),
-                                  filled: true,
-                                  fillColor: Theme.of(context).cardColor,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
+                            const Spacer(),
                             Stack(
                               children: [
                                 IconButton(
@@ -210,15 +197,26 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Chart placeholder
+                        // Category breakdown chart
                         Container(
                           height: 240,
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             color: Theme.of(context).cardColor,
                           ),
-                          child: Center(
-                            child: Text(tr.chartPlaceholder),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _buildCategoryChart(context, provider.products),
+                              ),
+                              const SizedBox(width: 12),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: _chartLegend(context),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -331,6 +329,64 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
     );
+  }
+
+  List<MapEntry<String, int>> _categoryData(List<MaterialModel> all) {
+    final cats = <String, int>{};
+    for (final m in all) {
+      final c = m.category.isEmpty ? 'Uncategorized' : m.category;
+      cats[c] = (cats[c] ?? 0) + 1;
+    }
+    final sorted = cats.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    return sorted.take(8).toList();
+  }
+
+  static const _chartColors = [
+    Color(0xFF4CAF50), Color(0xFF2196F3), Color(0xFFFF9800),
+    Color(0xFF9C27B0), Color(0xFFF44336), Color(0xFF00BCD4),
+    Color(0xFFFFEB3B), Color(0xFF795548),
+  ];
+
+  Widget _buildCategoryChart(BuildContext context, List<MaterialModel> all) {
+    final data = _categoryData(all);
+    if (data.isEmpty) {
+      return Center(child: Text(context.tr.noData,
+          style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white60 : Colors.black38)));
+    }
+    return PieChart(PieChartData(
+      sections: List.generate(data.length, (i) {
+        final pct = data[i].value / all.length * 100;
+        return PieChartSectionData(
+          value: data[i].value.toDouble(),
+          color: _chartColors[i % _chartColors.length],
+          radius: 48,
+          title: '${pct.toStringAsFixed(0)}%',
+          titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+        );
+      }),
+      centerSpaceRadius: 28,
+      sectionsSpace: 2,
+    ));
+  }
+
+  List<Widget> _chartLegend(BuildContext context) {
+    final data = _categoryData(ProductProvider.of(context).products);
+    return data.map((e) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(width: 10, height: 10,
+              decoration: BoxDecoration(
+                  color: _chartColors[data.indexOf(e) % _chartColors.length],
+                  shape: BoxShape.circle)),
+          const SizedBox(width: 6),
+          Text('${e.key} (${e.value})',
+              style: TextStyle(fontSize: 11,
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54)),
+        ],
+      ),
+    )).toList();
   }
 
   Widget _kpiCard(
@@ -530,7 +586,7 @@ class _DashboardPageState extends State<DashboardPage> {
       return;
     }
 
-    final alerts = AlertService.getAllAlerts();
+    final alerts = AlertService.getCriticalAlerts();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

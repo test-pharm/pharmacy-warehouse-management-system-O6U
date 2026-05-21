@@ -503,9 +503,10 @@ class _OrdersPageState extends State<OrdersPage> {
     }
 
     OrderService.updateOrderStatus(order.id, OrderStatus.completed);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Edit approved and applied.')));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(context.tr.editApproved)),
+    );
   }
 
   Future<void> _rejectEdit(OrderModel order) async {
@@ -516,8 +517,8 @@ class _OrdersPageState extends State<OrdersPage> {
         title: Text('${context.tr.reject} ${context.tr.editRequests}'),
         content: TextField(
           controller: reasonController,
-          decoration: const InputDecoration(
-            labelText: 'Reason for rejection',
+          decoration: InputDecoration(
+            labelText: context.tr.rejectReasonHint,
             border: OutlineInputBorder(),
           ),
           maxLines: 3,
@@ -540,9 +541,9 @@ class _OrdersPageState extends State<OrdersPage> {
 
     OrderService.updateOrderStatus(order.id, OrderStatus.canceled);
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Edit rejected.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(context.tr.editRejected)),
+    );
   }
 
   void _viewOrderDetails(OrderModel order, bool isDark) {

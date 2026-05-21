@@ -6,9 +6,14 @@ import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-class StocktakePage extends StatelessWidget {
+class StocktakePage extends StatefulWidget {
   const StocktakePage({super.key});
 
+  @override
+  State<StocktakePage> createState() => _StocktakePageState();
+}
+
+class _StocktakePageState extends State<StocktakePage> {
   @override
   Widget build(BuildContext context) {
     final provider = ProductProvider.of(context);

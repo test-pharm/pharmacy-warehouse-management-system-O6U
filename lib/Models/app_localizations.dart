@@ -361,4 +361,9 @@ class AppLocalizations {
       ? 'عدد الأيام المتبقية قبل انتهاء الصلاحية لاعتبار المادة وشيكة الانتهاء.'
       : 'Days remaining before expiry to consider a material as expiring soon.';
   String get settingsSaved => isArabic ? 'تم حفظ الإعدادات' : 'Settings saved';
+
+  // ── Orders Edit Approval ────────────────────────────────────────────────────
+  String get editApproved => isArabic ? 'تمت الموافقة على التعديل وتطبيقه.' : 'Edit approved and applied.';
+  String get editRejected => isArabic ? 'تم رفض التعديل.' : 'Edit rejected.';
+  String get rejectReasonHint => isArabic ? 'سبب الرفض' : 'Reason for rejection';
 }

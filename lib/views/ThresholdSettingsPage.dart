@@ -11,9 +11,12 @@ class ThresholdSettingsPage extends StatefulWidget {
 }
 
 class _ThresholdSettingsPageState extends State<ThresholdSettingsPage> {
+  final _formKey = GlobalKey<FormState>();
   final _lowStockCtrl = TextEditingController();
   final _expiryCtrl = TextEditingController();
   bool _loading = true;
+  int _origLow = 100;
+  int _origExpiry = 30;
 
   @override
   void initState() {
@@ -22,16 +25,31 @@ class _ThresholdSettingsPageState extends State<ThresholdSettingsPage> {
   }
 
   Future<void> _load() async {
-    final low = await ThresholdService.getLowStockThreshold();
-    final expiry = await ThresholdService.getExpiringSoonDays();
-    _lowStockCtrl.text = low.toString();
-    _expiryCtrl.text = expiry.toString();
+    _origLow = await ThresholdService.getLowStockThreshold();
+    _origExpiry = await ThresholdService.getExpiringSoonDays();
+    _lowStockCtrl.text = _origLow.toString();
+    _expiryCtrl.text = _origExpiry.toString();
     if (mounted) setState(() => _loading = false);
   }
 
+  Future<void> _resetDefaults() async {
+    await ThresholdService.setLowStockThreshold(100);
+    await ThresholdService.setExpiringSoonDays(30);
+    _lowStockCtrl.text = '100';
+    _expiryCtrl.text = '30';
+    await ProductProvider.of(context, listen: false).loadProducts();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr.settingsSaved)),
+      );
+    }
+  }
+
   Future<void> _save() async {
-    final low = int.tryParse(_lowStockCtrl.text) ?? 100;
-    final expiry = int.tryParse(_expiryCtrl.text) ?? 30;
+    if (!_formKey.currentState!.validate()) return;
+
+    final low = int.parse(_lowStockCtrl.text);
+    final expiry = int.parse(_expiryCtrl.text);
     await ThresholdService.setLowStockThreshold(low);
     await ThresholdService.setExpiringSoonDays(expiry);
     await ProductProvider.of(context, listen: false).loadProducts();
@@ -66,58 +84,88 @@ class _ThresholdSettingsPageState extends State<ThresholdSettingsPage> {
           else
             Expanded(
               child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildCard(
-                      context,
-                      icon: Icons.inventory_2_outlined,
-                      title: tr.lowStockThreshold,
-                      subtitle: tr.lowStockThresholdDesc,
-                      child: TextField(
-                        controller: _lowStockCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          isDense: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildCard(
+                        context,
+                        icon: Icons.inventory_2_outlined,
+                        title: tr.lowStockThreshold,
+                        subtitle: tr.lowStockThresholdDesc,
+                        child: TextFormField(
+                          controller: _lowStockCtrl,
+                          keyboardType: TextInputType.number,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return tr.required;
+                            final n = int.tryParse(v);
+                            if (n == null || n < 1) return tr.positiveNumber;
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            isDense: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildCard(
-                      context,
-                      icon: Icons.date_range,
-                      title: tr.expiringSoonThreshold,
-                      subtitle: tr.expiringSoonThresholdDesc,
-                      child: TextField(
-                        controller: _expiryCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          isDense: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      const SizedBox(height: 16),
+                      _buildCard(
+                        context,
+                        icon: Icons.date_range,
+                        title: tr.expiringSoonThreshold,
+                        subtitle: tr.expiringSoonThresholdDesc,
+                        child: TextFormField(
+                          controller: _expiryCtrl,
+                          keyboardType: TextInputType.number,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return tr.required;
+                            final n = int.tryParse(v);
+                            if (n == null || n < 1 || n > 365) {
+                              return tr.isArabic
+                                  ? 'أدخل رقماً بين 1 و 365'
+                                  : 'Enter a number between 1 and 365';
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            isDense: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _save,
-                        icon: const Icon(Icons.save),
-                        label: Text(tr.save),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              isDark ? Colors.lightBlueAccent : Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: _save,
+                              icon: const Icon(Icons.save),
+                              label: Text(tr.save),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isDark ? Colors.lightBlueAccent : Colors.blue,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          OutlinedButton.icon(
+                            onPressed: _resetDefaults,
+                            icon: const Icon(Icons.restore),
+                            label: Text(tr.isArabic ? 'إعادة الضبط' : 'Reset'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

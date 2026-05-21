@@ -1,7 +1,7 @@
 {
   "latestVersion": "1.0.19",
   "latestBuildNumber": 19,
-  "downloadUrl": "https://github.com/test-pharm/Pharmacy-test/releases/latest/download/pharmacy-wms-windows.zip",
+  "downloadUrl": "https://github.com/test-pharm/pharmacy-warehouse-management-system-O6U/releases/latest/download/pharmacy-wms-windows.zip",
   "mandatory": false,
   "releaseNotes": [
     "Configurable low-stock & expiry thresholds in Settings",

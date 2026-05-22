@@ -238,19 +238,28 @@ class _DashboardPageState extends State<DashboardPage> {
                                     fontWeight: FontWeight.w700),
                               ),
                               const SizedBox(height: 12),
-                              ...recentMaterials.map(
-                                (m) => Column(
-                                  children: [
-                                    _materialRow(
-                                      m.name,
-                                      '${m.quantity} ${tr.unit.toLowerCase()}',
-                                      m.expiryDate,
-                                      m.category,
-                                    ),
-                                    const Divider(),
-                                  ],
+                              if (recentMaterials.isEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 20),
+                                  child: Center(
+                                    child: Text(tr.noData,
+                                        style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white38 : Colors.black26)),
+                                  ),
+                                )
+                              else
+                                ...recentMaterials.map(
+                                  (m) => Column(
+                                    children: [
+                                      _materialRow(
+                                        m.name,
+                                        '${m.quantity} ${tr.unit.toLowerCase()}',
+                                        m.expiryDate,
+                                        m.category,
+                                      ),
+                                      const Divider(),
+                                    ],
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
@@ -296,7 +305,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                                 color: Theme.of(context).cardColor,
                               ),
                               child: Center(
@@ -442,7 +451,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         color: Theme.of(context).cardColor,
       ),
       child: Row(
@@ -451,7 +460,7 @@ class _DashboardPageState extends State<DashboardPage> {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color),
           ),

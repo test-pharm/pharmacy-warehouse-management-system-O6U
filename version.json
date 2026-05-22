@@ -1,11 +1,22 @@
 {
-  "latestVersion": "1.0.19",
-  "latestBuildNumber": 19,
-  "downloadUrl": "https://github.com/test-pharm/pharmacy-warehouse-management-system-O6U/releases/latest/download/pharmacy-wms-windows.zip",
+  "latestVersion": "1.0.31",
+  "latestBuildNumber": 31,
+  "downloadUrl": "https://github.com/MohamedShalaby24/pharmacy-warehouse-management-system-O6U/releases/latest/download/pharmacy-wms-windows.zip",
   "mandatory": false,
   "releaseNotes": [
-    "Configurable low-stock & expiry thresholds in Settings",
-    "Loading skeletons on Dashboard, Inventory, and Reports pages",
-    "Smooth shimmer animation while data loads"
+    "Full sync from test repo: all features up to v1.0.30",
+    "Multi-step Add Material wizard (Invoice → Selection → Form → Session List → Finish)",
+    "Multi-step Dispatch Material wizard with multi-item session (accumulate then 'Finish & Dispatch All')",
+    "Toast notification system (top-right overlay, slide+fade animation)",
+    "Pagination in inventory view (20 per page, prev/next controls)",
+    "Check for Updates in sidebar version label (app-level action)",
+    "Configurable thresholds (SharedPreferences-backed, live-reloaded from ProductProvider)",
+    "Responsive sidebar auto-collapse below 900px width",
+    "Consistent border radius (12px) across all cards",
+    "Interactive pie charts with distinct colors in Dashboard & Reports",
+    "Empty states everywhere (Dashboard, Inventory, Reports)",
+    "Skeleton shimmer loading placeholders",
+    "Dark mode fixes (LoginView, Dialog backgrounds)",
+    "Version label in sidebar shows update availability"
   ]
 }

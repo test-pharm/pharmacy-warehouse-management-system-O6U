@@ -6,7 +6,7 @@ import 'package:graduation_project/Models/app_version.dart';
 
 class UpdateService {
   static const String _versionUrl =
-      'https://raw.githubusercontent.com/test-pharm/pharmacy-warehouse-management-system-O6U/main/version.json';
+      'https://raw.githubusercontent.com/MohamedShalaby24/pharmacy-warehouse-management-system-O6U/main/version.json';
 
   static AppVersion? _cachedRemote;
   static PackageInfo? _packageInfo;

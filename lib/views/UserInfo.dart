@@ -381,7 +381,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: const Color(0xFF1CA0A5)),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: !enabled,
         fillColor: enabled
             ? null

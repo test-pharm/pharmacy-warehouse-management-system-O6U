@@ -192,6 +192,7 @@ class AppLocalizations {
   String get productAdded => isArabic ? 'تمت إضافة المنتج بنجاح' : 'Product added successfully';
 
   // ── Export dialog ──────────────────────────────────────────────────────────
+  String get invoiceNumber => isArabic ? 'رقم الفاتورة' : 'Invoice Number';
   String get exportProductTitle => isArabic ? 'صرف منتج' : 'Dispatch Product';
   String get exportProductSubtitle => isArabic
       ? 'سجّل مغادرة المنتج من مخزون المستودع.'
@@ -366,4 +367,30 @@ class AppLocalizations {
   String get editApproved => isArabic ? 'تمت الموافقة على التعديل وتطبيقه.' : 'Edit approved and applied.';
   String get editRejected => isArabic ? 'تم رفض التعديل.' : 'Edit rejected.';
   String get rejectReasonHint => isArabic ? 'سبب الرفض' : 'Reason for rejection';
+
+  // ── Add Material Wizard ─────────────────────────────────────────────────────
+  String get selectMaterial => isArabic ? 'اختر المادة' : 'Select Material';
+  String get existingStock => isArabic ? 'مخزون موجود' : 'Add to Existing Stock';
+  String get newMaterial => isArabic ? 'مادة جديدة' : 'Add New Material';
+  String get invoiceInfo => isArabic ? 'معلومات الفاتورة' : 'Invoice Information';
+  String get quantityToAdd => isArabic ? 'الكمية المضافة' : 'Quantity to Add';
+  String get currentInfo => isArabic ? 'المعلومات الحالية' : 'Current Information';
+  String get materialsAdded => isArabic ? 'المواد المضافة في هذه الجلسة' : 'Materials Added in This Session';
+  String get finishSaveAll => isArabic ? 'إنهاء وحفظ الكل' : 'Finish & Save All';
+
+  // ── Inventory Pagination ────────────────────────────────────────────────────
+  String get checkForUpdates => isArabic ? 'التحقق من التحديثات' : 'Check for Updates';
+  String get upToDate => isArabic ? 'البرنامج محدث' : 'You\'re up to date';
+  String noOfItems(int count) => isArabic ? '$count عنصر' : '$count items';
+  String pageOf(int current, int total) => isArabic
+      ? 'صفحة $current من $total'
+      : 'Page $current of $total';
+
+  // ── Dispatch Wizard ────────────────────────────────────────────────────────
+  String get addToDispatch => isArabic ? 'إضافة للصرف' : 'Add to Dispatch';
+  String get finishDispatchAll => isArabic ? 'إنهاء وصرف الكل' : 'Finish & Dispatch All';
+  String get itemsToDispatch => isArabic ? 'المواد المراد صرفها' : 'Items to Dispatch';
+  String unitsDispatchedSummary(int totalQuantity, int itemCount) => isArabic
+      ? 'تم صرف $totalQuantity وحدة من $itemCount مادة'
+      : 'Dispatched $totalQuantity units across $itemCount items';
 }

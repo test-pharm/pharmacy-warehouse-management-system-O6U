@@ -7,9 +7,9 @@ import 'package:graduation_project/Models/UserRoleModel.dart';
 import 'package:graduation_project/Models/materialModel.dart';
 import 'package:graduation_project/Services/notificationService.dart';
 import 'package:graduation_project/Services/orderService.dart';
-import 'package:graduation_project/widgets/AddMaterial.dart';
+import 'package:graduation_project/widgets/AddMaterialWizard.dart';
+import 'package:graduation_project/widgets/DispatchMaterialWizard.dart';
 import 'package:graduation_project/widgets/ExpiryEditDialog.dart';
-import 'package:graduation_project/widgets/ExportMaterial.dart';
 import 'package:graduation_project/Models/app_localizations.dart';
 import 'package:graduation_project/widgets/skeletons.dart';
 
@@ -26,6 +26,8 @@ class _InventoryPageState extends State<InventoryPage> {
   String _availabilityFilter = 'All';
   int? _sortColumnIndex;
   bool _sortAscending = true;
+  int _currentPage = 0;
+  static const int _itemsPerPage = 20;
 
   @override
   void dispose() {
@@ -46,7 +48,13 @@ class _InventoryPageState extends State<InventoryPage> {
         return _sortAscending ? result : -result;
       });
     }
-    final products = filtered;
+
+    final totalItems = filtered.length;
+    final totalPages = totalItems > 0 ? (totalItems / _itemsPerPage).ceil() : 1;
+    if (_currentPage >= totalPages) _currentPage = (totalPages - 1).clamp(0, 999999);
+    final start = _currentPage * _itemsPerPage;
+    final end = (start + _itemsPerPage).clamp(0, totalItems);
+    final products = totalItems > 0 ? filtered.sublist(start, end) : filtered;
 
     return Focus(
       autofocus: true,
@@ -82,7 +90,7 @@ class _InventoryPageState extends State<InventoryPage> {
                   ? const InventorySkeleton()
                   : provider.error != null
                   ? _buildErrorState(context, provider)
-                  : _buildContent(context, provider, products),
+                  : _buildContent(context, provider, products, totalPages: totalPages, totalItems: totalItems),
             ),
           ],
         ),
@@ -97,7 +105,7 @@ class _InventoryPageState extends State<InventoryPage> {
           child: TextField(
             controller: _searchCtrl,
             focusNode: _searchFocus,
-            onChanged: (_) => setState(() {}),
+            onChanged: (_) => setState(() => _currentPage = 0),
             decoration: InputDecoration(
               hintText: '${context.tr.searchByNameOrSku}  (Ctrl+F)',
               prefixIcon: const Icon(Icons.search),
@@ -128,11 +136,14 @@ class _InventoryPageState extends State<InventoryPage> {
                   child: Text(context.tr.unavailable),
                 ),
               ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _availabilityFilter = value);
-                }
-              },
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _availabilityFilter = value;
+                  _currentPage = 0;
+                });
+              }
+            },
             ),
           ),
         ),
@@ -185,30 +196,53 @@ class _InventoryPageState extends State<InventoryPage> {
   Widget _buildContent(
     BuildContext context,
     ProductProvider provider,
-    List<MaterialModel> products,
-  ) {
+    List<MaterialModel> products, {
+    required int totalPages,
+    required int totalItems,
+  }) {
     if (products.isEmpty) {
       return Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
         ),
+        padding: const EdgeInsets.all(40),
         child: Center(
-          child: Text(context.tr.noProductsFiltered),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.inventory_2_outlined, size: 64,
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white24 : Colors.black12),
+              const SizedBox(height: 16),
+              Text(context.tr.noProductsFiltered,
+                  style: TextStyle(fontSize: 16,
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white60 : Colors.black45)),
+              const SizedBox(height: 16),
+              if (AuthService.isWarehouseManager)
+                ElevatedButton.icon(
+                  onPressed: () => _openProductDialog(context, ProductProvider.of(context)),
+                  icon: const Icon(Icons.add),
+                  label: Text(context.tr.addProduct),
+                ),
+            ],
+          ),
         ),
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SingleChildScrollView(
-          child: DataTable(
+    return Column(
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                child: DataTable(
             headingRowHeight: 54,
             dataRowMinHeight: 62,
             dataRowMaxHeight: 62,
@@ -265,9 +299,13 @@ class _InventoryPageState extends State<InventoryPage> {
                 ],
               );
             }).toList(),
+                ),
+              ),
+            ),
           ),
         ),
-      ),
+        _buildPagination(context, totalPages, totalItems),
+      ],
     );
   }
 
@@ -351,64 +389,9 @@ class _InventoryPageState extends State<InventoryPage> {
       return;
     }
 
-    final payload = await showDialog<Map<String, dynamic>>(
+    await showDialog<void>(
       context: context,
-      builder: (_) => AddMaterialDialog(provider: provider),
-    );
-
-    if (payload == null) {
-      return;
-    }
-
-    final isExistingStockAdd = payload['_mode'] == 'existing';
-    final String? error;
-    if (isExistingStockAdd) {
-      error = await provider.updateProduct(
-        payload['_productId'].toString(),
-        Map<String, dynamic>.from(payload['_body'] as Map),
-      );
-    } else {
-      error = await provider.addProduct(payload);
-    }
-
-    if (!context.mounted) {
-      return;
-    }
-
-    if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: Colors.red),
-      );
-      return;
-    }
-
-    OrderService.addOrder(
-      OrderModel(
-        productId: isExistingStockAdd ? payload['_productId'].toString() : null,
-        productName: payload['materialName']?.toString() ?? '',
-        productSku: payload['material_SKU']?.toString() ?? '',
-        quantity: payload['quantity'] is int
-            ? payload['quantity'] as int
-            : int.tryParse(payload['quantity']?.toString() ?? '') ?? 0,
-        unit: payload['unit']?.toString() ?? '',
-        logNumber: payload['logNumber']?.toString() ?? '',
-        categoryId: payload['categoryId'] is int
-            ? payload['categoryId'] as int
-            : int.tryParse(payload['categoryId']?.toString() ?? '') ?? 0,
-        type: OrderType.add,
-        status: OrderStatus.completed,
-        createdBy: AuthService.currentUser?.fullName ?? context.tr.unknownUser,
-      ),
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isExistingStockAdd
-              ? context.tr.stockUpdated
-              : context.tr.productAdded,
-        ),
-      ),
+      builder: (_) => AddMaterialWizard(provider: provider),
     );
   }
 
@@ -416,50 +399,9 @@ class _InventoryPageState extends State<InventoryPage> {
     BuildContext context,
     ProductProvider provider,
   ) async {
-    final result = await showDialog<ExportMaterialResult>(
+    await showDialog<void>(
       context: context,
-      builder: (_) => ExportMaterialDialog(provider: provider),
-    );
-    if (result == null) return;
-
-    final error = await provider.updateProduct(result.product.id, result.body);
-    if (!context.mounted) return;
-
-    if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: Colors.red),
-      );
-      return;
-    }
-
-    OrderService.addOrder(
-      OrderModel(
-        productId: result.product.id,
-        productName: result.product.name,
-        productSku: result.product.sku,
-        quantity: result.quantity,
-        unit: result.product.unit,
-        logNumber: result.product.lot,
-        categoryId: result.product.categoryId,
-        type: OrderType.export,
-        status: OrderStatus.completed,
-        createdBy: AuthService.currentUser?.fullName ?? context.tr.unknownUser,
-      ),
-    );
-
-    // Determine the remaining quantity from the body that was sent to the API.
-    final remainingQty = result.body['quantity'] as int? ?? -1;
-    final outOfStock = remainingQty == 0;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          outOfStock
-              ? context.tr.outOfStockWarning(result.quantity, result.product.name)
-              : context.tr.unitsDispatched(result.quantity, result.product.name),
-        ),
-        backgroundColor: outOfStock ? Colors.orange : null,
-      ),
+      builder: (_) => DispatchMaterialWizard(provider: provider),
     );
   }
 
@@ -584,16 +526,17 @@ class _InventoryPageState extends State<InventoryPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
     final mutedColor = isDark ? Colors.white60 : Colors.black54;
+    final isArabic = context.tr.isArabic;
 
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: isDark ? const Color(0xFF1E1E2E) : null,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         titlePadding: EdgeInsets.zero,
         contentPadding: EdgeInsets.zero,
         content: SizedBox(
-          width: 420,
+          width: 460,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -602,7 +545,7 @@ class _InventoryPageState extends State<InventoryPage> {
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF2A2A3E) : const Color(0xFFF5F7FA),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 ),
                 child: Row(
                   children: [
@@ -634,27 +577,72 @@ class _InventoryPageState extends State<InventoryPage> {
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    _detailRow(Icons.category_outlined, context.tr.category, product.category.isNotEmpty ? product.category : product.categoryId.toString()),
-                    const Divider(height: 20),
-                    _detailRow(Icons.inventory_outlined, context.tr.quantity, '${product.quantity} ${product.unit}'),
-                    const Divider(height: 20),
-                    _detailRow(Icons.qr_code_outlined, context.tr.logNumber, product.lot.isEmpty ? '-' : product.lot),
-                    const Divider(height: 20),
-                    _detailRow(Icons.location_on_outlined, context.tr.storageLocation, product.location.isEmpty ? '-' : product.location),
-                    const Divider(height: 20),
-                    _detailRow(Icons.calendar_today_outlined, context.tr.expiryDate, _formatDate(product.expiryDate)),
-                    const Divider(height: 20),
-                    _detailRow(
-                      Icons.check_circle_outlined,
-                      context.tr.status,
-                      product.isAvailable ? context.tr.available : context.tr.unavailable,
-                      valueColor: product.isAvailable ? Colors.green : Colors.orange,
-                    ),
-                  ],
+              SizedBox(
+                height: 280,
+                child: DefaultTabController(
+                  length: 3,
+                  child: Column(
+                    children: [
+                      TabBar(
+                        labelColor: Colors.blue,
+                        unselectedLabelColor: mutedColor,
+                        indicatorColor: Colors.blue,
+                        tabs: [
+                          Tab(text: isArabic ? 'تفاصيل' : 'Details'),
+                          Tab(text: isArabic ? 'صلاحية' : 'Expiry'),
+                          Tab(text: isArabic ? 'تاريخ' : 'History'),
+                        ],
+                      ),
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                children: [
+                                  _detailRow(Icons.category_outlined, context.tr.category, product.category.isNotEmpty ? product.category : product.categoryId.toString()),
+                                  const Divider(height: 20),
+                                  _detailRow(Icons.inventory_outlined, context.tr.quantity, '${product.quantity} ${product.unit}'),
+                                  const Divider(height: 20),
+                                  _detailRow(Icons.qr_code_outlined, context.tr.logNumber, product.lot.isEmpty ? '-' : product.lot),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                children: [
+                                  _detailRow(Icons.location_on_outlined, context.tr.storageLocation, product.location.isEmpty ? '-' : product.location),
+                                  const Divider(height: 20),
+                                  _detailRow(Icons.calendar_today_outlined, context.tr.expiryDate, _formatDate(product.expiryDate)),
+                                  const Divider(height: 20),
+                                  _detailRow(
+                                    Icons.check_circle_outlined, context.tr.status,
+                                    product.isAvailable ? context.tr.available : context.tr.unavailable,
+                                    valueColor: product.isAvailable ? Colors.green : Colors.orange,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.history, size: 40, color: mutedColor),
+                                    const SizedBox(height: 8),
+                                    Text(isArabic ? 'سجل الطلبات قيد التطوير' : 'Order history coming soon',
+                                        style: TextStyle(color: mutedColor)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Padding(
@@ -715,6 +703,49 @@ class _InventoryPageState extends State<InventoryPage> {
     };
 
     return matchesSearch && matchesAvailability;
+  }
+
+  Widget _buildPagination(BuildContext context, int totalPages, int totalItems) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white70 : Colors.black54;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+        border: Border(
+          top: BorderSide(color: isDark ? Colors.white12 : Colors.black12),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Text(
+            context.tr.noOfItems(totalItems),
+            style: TextStyle(color: textColor, fontSize: 13),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.chevron_left, size: 20),
+            onPressed: _currentPage > 0
+                ? () => setState(() => _currentPage--)
+                : null,
+            visualDensity: VisualDensity.compact,
+          ),
+          Text(
+            context.tr.pageOf(_currentPage + 1, totalPages),
+            style: TextStyle(color: textColor, fontSize: 13),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right, size: 20),
+            onPressed: _currentPage < totalPages - 1
+                ? () => setState(() => _currentPage++)
+                : null,
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      ),
+    );
   }
 
   String _formatDate(String raw) {

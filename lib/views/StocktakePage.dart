@@ -65,7 +65,7 @@ class _StocktakePageState extends State<StocktakePage> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1A2F35) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [

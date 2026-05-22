@@ -64,100 +64,107 @@ class _UpdateDialogState extends State<UpdateDialog> {
         insetPadding: const EdgeInsets.all(24),
         backgroundColor: bgColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          width: 400,
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildIcon(isDark),
-              const SizedBox(height: 18),
-              Text(
-                _downloading
-                    ? _progress.state == DownloadState.launching
-                        ? context.tr.installingUpdate
-                        : context.tr.downloadingUpdate
-                    : context.tr.updateAvailable,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _downloading
-                    ? _progress.state == DownloadState.extracting
-                        ? 'Extracting update package...'
-                        : _progress.state == DownloadState.launching
-                            ? 'Launching installer...'
-                            : _progress.state == DownloadState.error
-                                ? _progress.error ?? 'Download failed'
-                                : 'Version ${widget.version.latestVersion}'
-                    : 'Version ${widget.version.latestVersion} is now available.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.white70 : Colors.black54,
-                ),
-              ),
-              if (!_downloading && widget.version.releaseNotes.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                _buildReleaseNotes(isDark),
-              ],
-              if (_downloading) ...[
-                const SizedBox(height: 20),
-                _buildProgressBar(isDark),
-                const SizedBox(height: 8),
-                Text(
-                  _progress.progress > 0
-                      ? '${(_progress.progress * 100).toStringAsFixed(0)}%'
-                      : '',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white60 : Colors.black54,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 24),
-              if (!_downloading)
-                SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: ElevatedButton.icon(
-                    onPressed: _startDownload,
-                    icon: const Icon(Icons.download_rounded),
-                    label: Text(context.tr.updateNow),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0A6B6E),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 440,
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildIcon(isDark),
+                  const SizedBox(height: 18),
+                  Text(
+                    _downloading
+                        ? _progress.state == DownloadState.launching
+                            ? context.tr.installingUpdate
+                            : context.tr.downloadingUpdate
+                        : context.tr.updateAvailable,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
-                ),
-              if (!_downloading && !widget.version.mandatory) ...[
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(context.tr.maybeLater),
+                  const SizedBox(height: 8),
+                  Text(
+                    _downloading
+                        ? _progress.state == DownloadState.extracting
+                            ? 'Extracting update package...'
+                            : _progress.state == DownloadState.launching
+                                ? 'Launching installer...'
+                                : _progress.state == DownloadState.error
+                                    ? _progress.error ?? 'Download failed'
+                                    : 'Version ${widget.version.latestVersion}'
+                        : 'Version ${widget.version.latestVersion} is now available.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
                   ),
-                ),
-              ],
-              if (_downloading &&
-                  _progress.state == DownloadState.error) ...[
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(context.tr.close),
-                  ),
-                ),
-              ],
-            ],
+                  if (!_downloading && widget.version.releaseNotes.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    _buildReleaseNotes(isDark),
+                  ],
+                  if (_downloading) ...[
+                    const SizedBox(height: 20),
+                    _buildProgressBar(isDark),
+                    const SizedBox(height: 8),
+                    Text(
+                      _progress.progress > 0
+                          ? '${(_progress.progress * 100).toStringAsFixed(0)}%'
+                          : '',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? Colors.white60 : Colors.black54,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  if (!_downloading)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton.icon(
+                        onPressed: _startDownload,
+                        icon: const Icon(Icons.download_rounded),
+                        label: Text(context.tr.updateNow),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0A6B6E),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (!_downloading && !widget.version.mandatory) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(context.tr.maybeLater),
+                      ),
+                    ),
+                  ],
+                  if (_downloading &&
+                      _progress.state == DownloadState.error) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(context.tr.close),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -170,7 +177,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +218,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
 
   Widget _buildProgressBar(bool isDark) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(12),
       child: LinearProgressIndicator(
         value: _progress.progress,
         minHeight: 8,

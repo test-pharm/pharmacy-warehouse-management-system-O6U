@@ -16,6 +16,11 @@ import 'package:graduation_project/Models/app_localizations.dart';
 import 'package:graduation_project/Models/materialModel.dart';
 import 'package:graduation_project/widgets/skeletons.dart';
 
+const _pieColors = [
+  Colors.blue, Colors.teal, Colors.orange, Colors.purple,
+  Colors.red, Colors.green, Colors.indigo, Colors.amber,
+];
+
 class ReportsPage extends StatefulWidget {
   final VoidCallback? onGoToOrders;
   const ReportsPage({super.key, this.onGoToOrders});
@@ -37,6 +42,8 @@ class _ReportsPageState extends State<ReportsPage>
   // Sorting
   int _sortCol = -1;
   bool _sortAsc = true;
+
+  int _touchedPieIndex = -1;
 
   // Pagination
   int _pageSize = 25;
@@ -131,10 +138,7 @@ class _ReportsPageState extends State<ReportsPage>
       final cat = m.category.isEmpty ? 'Uncategorized' : m.category;
       counts[cat] = (counts[cat] ?? 0) + 1;
     }
-    final colors = [
-      Colors.blue, Colors.teal, Colors.orange, Colors.purple,
-      Colors.red, Colors.green, Colors.indigo, Colors.amber,
-    ];
+    final colors = _pieColors;
     return counts.entries.toList().asMap().entries.map((e) {
       final i = e.key;
       final entry = e.value;
@@ -184,7 +188,7 @@ class _ReportsPageState extends State<ReportsPage>
       months[idx] = (months[idx] ?? 0) + 1;
     }
     return months.entries.map((e) => BarChartGroupData(
-      x: e.key, barRods: [_barRod(e.value, const Color(0xFF0D6EFD))],
+      x: e.key, barRods: [_barRod(e.value, _pieColors[e.key % _pieColors.length])],
     )).toList();
   }
 
@@ -288,7 +292,7 @@ class _ReportsPageState extends State<ReportsPage>
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A2332) : Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: TabBar(
         controller: _tabCtrl,
@@ -375,7 +379,7 @@ class _ReportsPageState extends State<ReportsPage>
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: accent.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: accent, size: 26),
             ),
@@ -420,15 +424,46 @@ class _ReportsPageState extends State<ReportsPage>
   }
 
   Widget _buildPieChart(bool isDark, List<MaterialModel> all) {
-    final data = _categoryPieData(all);
-    if (data.isEmpty) return Center(child: Text(context.tr.noData,
+    if (all.isEmpty) return Center(child: Text(context.tr.noData,
         style: TextStyle(color: isDark ? Colors.white60 : Colors.black38)));
+    final Map<String, int> counts = {};
+    for (final m in all) {
+      final cat = m.category.isEmpty ? 'Uncategorized' : m.category;
+      counts[cat] = (counts[cat] ?? 0) + 1;
+    }
+    final entries = counts.entries.toList();
     return Stack(
       alignment: Alignment.center,
       children: [
         PieChart(PieChartData(
-          sections: data, centerSpaceRadius: 36,
+          sections: List.generate(entries.length, (i) {
+            final entry = entries[i];
+            final pct = entry.value / all.length * 100;
+            final isTouched = i == _touchedPieIndex;
+            return PieChartSectionData(
+              value: entry.value.toDouble(),
+              color: _pieColors[i % _pieColors.length],
+              radius: isTouched ? 58 : 48,
+              title: '${pct.toStringAsFixed(0)}%',
+              titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+              badgeWidget: isTouched ? Text(entry.key,
+                  style: TextStyle(fontSize: 9, color: isDark ? Colors.white70 : Colors.black54)) : null,
+              badgePositionPercentageOffset: 1.3,
+            );
+          }),
+          centerSpaceRadius: 36,
           sectionsSpace: 2,
+          pieTouchData: PieTouchData(
+            touchCallback: (event, response) {
+              if (!event.isInterestedForInteractions || response == null ||
+                  response.touchedSection == null) {
+                if (_touchedPieIndex != -1) setState(() => _touchedPieIndex = -1);
+                return;
+              }
+              final idx = response.touchedSection!.touchedSectionIndex;
+              if (idx != _touchedPieIndex) setState(() => _touchedPieIndex = idx);
+            },
+          ),
         )),
         Text('${all.length}', style: TextStyle(fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -576,12 +611,12 @@ class _ReportsPageState extends State<ReportsPage>
           flex: 3,
           child: Container(
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1A2332) : Colors.white,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: TextField(
-              controller: _searchCtrl,
-              onChanged: (_) { setState(() { _pageIndex = 0; }); },
+            color: isDark ? const Color(0xFF1A2332) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: TextField(
+            controller: _searchCtrl,
+            onChanged: (_) { setState(() { _pageIndex = 0; }); },
               style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14),
               decoration: InputDecoration(
                 hintText: context.tr.searchByNameOrSku,
@@ -614,7 +649,7 @@ class _ReportsPageState extends State<ReportsPage>
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A2332) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: isDark ? const Color(0xFF2A3F5F) : Colors.grey.shade300),
       ),
       child: DropdownButtonHideUnderline(
@@ -661,12 +696,12 @@ class _ReportsPageState extends State<ReportsPage>
     final hintColor = isDark ? Colors.white38 : Colors.black38;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1A2332) : Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: isDark ? const Color(0xFF2A3F5F) : Colors.grey.shade300),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [

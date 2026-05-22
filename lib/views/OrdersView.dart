@@ -69,7 +69,7 @@ class _OrdersPageState extends State<OrdersPage> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E90FF).withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.history,
@@ -274,7 +274,7 @@ class _OrdersPageState extends State<OrdersPage> {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A2332) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark ? const Color(0xFF2A3F5F) : Colors.grey.shade300,
         ),
@@ -311,7 +311,7 @@ class _OrdersPageState extends State<OrdersPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A2332) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark ? const Color(0xFF2A3F5F) : Colors.grey.shade300,
         ),

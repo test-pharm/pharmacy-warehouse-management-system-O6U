@@ -106,7 +106,7 @@ class _ThresholdSettingsPageState extends State<ThresholdSettingsPage> {
                           decoration: InputDecoration(
                             isDense: true,
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         ),
@@ -133,7 +133,7 @@ class _ThresholdSettingsPageState extends State<ThresholdSettingsPage> {
                           decoration: InputDecoration(
                             isDense: true,
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         ),

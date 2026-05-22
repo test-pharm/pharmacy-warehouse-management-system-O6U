@@ -180,6 +180,7 @@ class ProductProvider extends ChangeNotifier {
     _products = await _fetchProductsFromApi();
     _applyPendingOverrides();
     await AlertService.reloadThresholds();
+    await MaterialService.reloadThresholds();
     _syncDerivedState();
   }
 

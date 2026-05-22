@@ -202,12 +202,13 @@ class _LoginPageState extends State<LoginPage>
 
   Widget _buildLoginCard(BuildContext context) {
     final tr = context.tr;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       elevation: 28,
       borderRadius: BorderRadius.circular(18),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
           borderRadius: BorderRadius.circular(18),
         ),
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 36),
@@ -297,7 +298,7 @@ class _LoginPageState extends State<LoginPage>
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.red.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.red.withOpacity(0.3)),
                   ),
                   child: Row(
@@ -392,7 +393,7 @@ class _LoginPageState extends State<LoginPage>
         Container(
           decoration: BoxDecoration(
             color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: child,
         ),
@@ -665,7 +666,7 @@ class _RegisterSheetState extends State<_RegisterSheet> {
             const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: selected ? color.withOpacity(0.12) : Colors.grey[100],
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected ? color : Colors.grey[300]!,
             width: selected ? 1.5 : 1,
@@ -718,7 +719,7 @@ class _RegisterSheetState extends State<_RegisterSheet> {
             prefixIcon: Icon(icon, size: 20),
             suffixIcon: suffixIcon,
             border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(12)),
             contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12, vertical: 14),
           ),
@@ -741,7 +742,7 @@ class _RegisterSheetState extends State<_RegisterSheet> {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Row(

@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+const _shimmerGradient = LinearGradient(
+  colors: [Color(0xFFE0E0E0), Color(0xFFF5F5F5), Color(0xFFE0E0E0)],
+  stops: [0.0, 0.5, 1.0],
+  begin: Alignment.centerLeft,
+  end: Alignment.centerRight,
+);
+
 class _ShimmerPainter extends CustomPainter {
   final double dx;
   _ShimmerPainter(this.dx);
@@ -7,16 +14,7 @@ class _ShimmerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromLTWH(dx - 120, 0, 120, size.height);
-    final gradient = LinearGradient(
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-      colors: [
-        Colors.transparent,
-        Colors.white.withOpacity(0.35),
-        Colors.transparent,
-      ],
-      stops: const [0.0, 0.5, 1.0],
-    );
+    final gradient = _shimmerGradient;
     canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawRect(
         rect, Paint()..shader = gradient.createShader(rect));
